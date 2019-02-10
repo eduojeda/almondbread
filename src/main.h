@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <cmath>
 
 void framebufferSizeCallback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -9,8 +10,8 @@ int setUpShaderProgram();
 GLFWwindow* initGLWindow();
 GLubyte *generateTextureImageData(int width, int height, int depth);
 
-const unsigned int SCREEN_WIDTH = 1024;
-const unsigned int SCREEN_HEIGHT = 768;
+const unsigned int SCREEN_WIDTH = 900;
+const unsigned int SCREEN_HEIGHT = 900;
 
 const char *vertexShaderSource = "#version 330 core\n"
                                  "layout (location = 0) in vec3 aPos;\n"

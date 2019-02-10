@@ -6,10 +6,10 @@ int main() {
 
     float quadVertices[] = {
         // positions         // texture coords
-         0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
-         0.5f, -0.5f, 0.0f,  1.0f, 0.0f,
-        -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f, 0.0f,  0.0f, 1.0f
+         1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
+         1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
+        -1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,  0.0f, 1.0f
     };
 
     unsigned int quadIndices[] = {
@@ -136,21 +136,49 @@ GLFWwindow* initGLWindow() {
     return window;
 }
 
+int mandelbrot(double cRe, double cIm, int maxMod, int maxIter) {
+    double zRe = 0.0;
+    double zIm = 0.0;
+    double zRe1 = 0.0;
+    int iter = 0;
+
+    while (sqrt(pow(zRe, 2.0) + pow(zIm, 2.0)) < maxMod && iter < maxIter) {
+        zRe1 = pow(zRe, 2.0) - pow(zIm, 2.0) + cRe;
+        zIm = 2.0 * zRe * zIm + cIm;
+        zRe = zRe1;
+        iter++;
+    }
+
+    return iter;
+}
+
 GLubyte *generateTextureImageData(int width, int height, int depth) {
     GLubyte *img = (GLubyte *)malloc(sizeof(GLubyte) * depth * width * height);
 
     memset(img, 0x00, sizeof(GLubyte) * depth * width * height);
 
-    int count = 0;
-    for (int y = 0 ; y < height ; y++) {
-        for (int x = 0 ; x < width * depth ; x+=depth) {
-            int offset = y * width * depth + x;
-            int val = (int)(count * 255 / (height*width));
-            img[offset] = val;
-            img[offset+1] = val;
-            img[offset+2] = val;
+    int iters = 0;
+    double zoom = 0.1;
+    double origRe = -1.4;
+    double origIm = 0.0;
 
-            count++;
+    for (int y = 0 ; y < height ; y++) {
+        for (int x = 0 ; x < width ; x++) {
+            iters = mandelbrot(
+                (origRe - zoom) + (double) x / width * 2.0 * zoom,
+                (origIm - zoom) + (double) y / height * 2.0 * zoom,
+                2,
+                100
+            );
+
+            int rval = (int)((float)iters / 100 * 255);
+            int gval = (int)((float)iters / 100 * 255);
+            int bval = (int)((float)iters / 100 * 255);
+
+            int offset = y * width * depth + x * depth;
+            img[offset] = rval;
+            img[offset+1] = gval;
+            img[offset+2] = bval;
         }
     }
 
