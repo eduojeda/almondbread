@@ -172,12 +172,13 @@ GLubyte *generateTextureImageData(int width, int height, int depth) {
     double cImDelta = range / height;
 
     int brightness, offset;
-    for (int y = 0 ; y < height ; y++) {
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (int y = 0 ; y < height ; y++, cIm += cImDelta) {
         cRe = cReInitial;
-        for (int x = 0 ; x < width ; x++) {
+        for (int x = 0 ; x < width ; x++, cRe += cReDelta) {
             iters = mandelbrot(cRe, cIm, 4, maxIters);
-            cRe += cReDelta
-            cIm += cImDelta;
 
             brightness = (int)((float)iters / maxIters * 255);
             offset = (y * width + x) * depth;
@@ -186,6 +187,10 @@ GLubyte *generateTextureImageData(int width, int height, int depth) {
             img[offset+2] = brightness;
         }
     }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = end - start;
+    std::cout << "Texture: " << elapsed.count() << " ms" << std::endl;
 
     return (GLubyte *)img;
 }
