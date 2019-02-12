@@ -136,16 +136,18 @@ GLFWwindow* initGLWindow() {
     return window;
 }
 
-int mandelbrot(double cRe, double cIm, int maxModSquared, int maxIter) {
+int mandelbrot(double cRe, double cIm, int maxModSq, int maxIter) {
     double zRe = 0.0;
     double zIm = 0.0;
-    double zReAux = 0.0;
+    double zReSq = 0.0;
+    double zImSq = 0.0;
     int iter = 0;
 
-    while (zRe*zRe + zIm*zIm < maxModSquared && iter < maxIter) {
-        zReAux = zRe*zRe - zIm*zIm;
+    while (zReSq + zImSq < maxModSq && iter < maxIter) {
+        zReSq = zRe*zRe;
+        zImSq = zIm*zIm;
         zIm = 2.0 * zRe * zIm + cIm;
-        zRe = zReAux + cRe;
+        zRe = zReSq - zImSq + cRe;
         iter++;
     }
 
@@ -170,10 +172,12 @@ GLubyte *generateTextureImageData(int width, int height, int depth) {
     double cImDelta = range / height;
 
     int brightness, offset;
-    for (int y = 0 ; y < height ; y++, cIm += cImDelta) {
+    for (int y = 0 ; y < height ; y++) {
         cRe = cReInitial;
-        for (int x = 0 ; x < width ; x++, cRe += cReDelta) {
+        for (int x = 0 ; x < width ; x++) {
             iters = mandelbrot(cRe, cIm, 4, maxIters);
+            cRe += cReDelta
+            cIm += cImDelta;
 
             brightness = (int)((float)iters / maxIters * 255);
             offset = (y * width + x) * depth;
