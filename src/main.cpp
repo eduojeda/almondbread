@@ -160,9 +160,9 @@ GLubyte *generateTextureImageData(int width, int height, int depth) {
     memset(img, 0x00, sizeof(GLubyte) * depth * width * height);
 
     int iters = 0;
-    int maxIters = 100;
-    double range = 0.2;
-    double originRe = -1.3;
+    int maxIters = 200;
+    double range = 0.05;
+    double originRe = -1.4;
     double originIm = 0.0;
 
     double cReInitial = originRe - range / 2.0;

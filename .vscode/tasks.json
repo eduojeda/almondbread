@@ -1,0 +1,14 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build almondbread",
+            "type": "shell",
+            "command": "g++ -O3 -ffast-math lib/glad/src/glad.c -g src/main.cpp -D GLFW_DLL -I lib/glfw/include -I lib/glad/include -L lib/glfw/lib-mingw -llibglfw3 -lopengl32 -o build/almondbread.exe",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
