@@ -136,16 +136,16 @@ GLFWwindow* initGLWindow() {
     return window;
 }
 
-int mandelbrot(double cRe, double cIm, int maxMod, int maxIter) {
+int mandelbrot(double cRe, double cIm, int maxModSquared, int maxIter) {
     double zRe = 0.0;
     double zIm = 0.0;
-    double zRe1 = 0.0;
+    double zReAux = 0.0;
     int iter = 0;
 
-    while (sqrt(pow(zRe, 2.0) + pow(zIm, 2.0)) < maxMod && iter < maxIter) {
-        zRe1 = pow(zRe, 2.0) - pow(zIm, 2.0) + cRe;
+    while (zRe*zRe + zIm*zIm < maxModSquared && iter < maxIter) {
+        zReAux = zRe*zRe - zIm*zIm;
         zIm = 2.0 * zRe * zIm + cIm;
-        zRe = zRe1;
+        zRe = zReAux + cRe;
         iter++;
     }
 
@@ -158,27 +158,28 @@ GLubyte *generateTextureImageData(int width, int height, int depth) {
     memset(img, 0x00, sizeof(GLubyte) * depth * width * height);
 
     int iters = 0;
-    double zoom = 0.1;
-    double origRe = -1.4;
-    double origIm = 0.0;
+    int maxIters = 100;
+    double range = 0.2;
+    double originRe = -1.3;
+    double originIm = 0.0;
 
-    for (int y = 0 ; y < height ; y++) {
-        for (int x = 0 ; x < width ; x++) {
-            iters = mandelbrot(
-                (origRe - zoom) + (double) x / width * 2.0 * zoom,
-                (origIm - zoom) + (double) y / height * 2.0 * zoom,
-                2,
-                100
-            );
+    double cReInitial = originRe - range / 2.0;
+    double cRe = cReInitial;
+    double cIm = originIm - range / 2.0;
+    double cReDelta = range / width;
+    double cImDelta = range / height;
 
-            int rval = (int)((float)iters / 100 * 255);
-            int gval = (int)((float)iters / 100 * 255);
-            int bval = (int)((float)iters / 100 * 255);
+    int brightness, offset;
+    for (int y = 0 ; y < height ; y++, cIm += cImDelta) {
+        cRe = cReInitial;
+        for (int x = 0 ; x < width ; x++, cRe += cReDelta) {
+            iters = mandelbrot(cRe, cIm, 4, maxIters);
 
-            int offset = y * width * depth + x * depth;
-            img[offset] = rval;
-            img[offset+1] = gval;
-            img[offset+2] = bval;
+            brightness = (int)((float)iters / maxIters * 255);
+            offset = (y * width + x) * depth;
+            img[offset] = brightness;
+            img[offset+1] = brightness;
+            img[offset+2] = brightness;
         }
     }
 
