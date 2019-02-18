@@ -84,7 +84,7 @@ GLFWwindow* initGLWindow() {
 
     GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Almondbread", NULL, NULL);
     if (window == NULL) {
-        std::cout << "ERROR: Failed to create GLFW window." << std::endl;
+        std::cerr << "Failed to create GLFW window." << std::endl;
         glfwTerminate();
         exit(-1);
     }
@@ -94,7 +94,7 @@ GLFWwindow* initGLWindow() {
     glfwSetErrorCallback(errorCallback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cout << "ERROR: Failed to initialize GLAD." << std::endl;
+        std::cerr << "Failed to initialize GLAD." << std::endl;
         exit(-1);
     }
 
@@ -155,13 +155,13 @@ GLubyte *generateTextureImageData(int width, int height, int depth) {
 
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = end - start;
-    std::cout << "Texture: " << elapsed.count() << " ms" << std::endl;
+    std::cout << "Rendering time: " << elapsed.count() << " ms" << std::endl;
 
     return (GLubyte *)img;
 }
 
 void errorCallback(int error, const char *description) {
-    fprintf(stderr, "Error: %s\n", description);
+    std::cerr << description << std::endl;
 }
 
 void framebufferSizeCallback(GLFWwindow *window, int width, int height) {

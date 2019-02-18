@@ -10,7 +10,6 @@ class ShaderLoader {
 private:
     std::string vertexCode;
     std::string fragmentCode;
-    std::string geometryCode;
 
     std::string readFileContentsFromPath(const char* path);
     int compileShader(std::string shaderCode, GLenum shaderType);

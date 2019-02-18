@@ -1,8 +1,12 @@
 #include "shader_loader.h"
 
 ShaderLoader::ShaderLoader(const char* vertexShaderPath, const char* fragmentShaderPath) {
-    vertexCode = readFileContentsFromPath(vertexShaderPath);
-    fragmentCode = readFileContentsFromPath(fragmentShaderPath);
+    try {
+        vertexCode = readFileContentsFromPath(vertexShaderPath);
+        fragmentCode = readFileContentsFromPath(fragmentShaderPath);
+    } catch (std::exception &e) {
+        std::cerr << "Failed to read shader file contents.\n"<< e.what() << std::endl;
+    }
 }
 
 int ShaderLoader::createProgram() {
@@ -21,7 +25,7 @@ int ShaderLoader::createProgram() {
     glGetProgramiv(programId, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(programId, 512, NULL, infoLog);
-        std::cout << "ERROR: Shader program linking failed.\n" << infoLog << std::endl;
+        std::cerr << "Shader program linking failed.\n" << infoLog << std::endl;
     }
 
     glDeleteShader(vertexId);
@@ -41,29 +45,24 @@ int ShaderLoader::compileShader(std::string shaderCode, GLenum shaderType) {
     glGetShaderiv(id, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(id, 512, NULL, infoLog);
-        std::cout << "ERROR: Shader compilation failed.\n" << infoLog << std::endl;
+        std::cerr << "Shader compilation failed.\n" << infoLog << std::endl;
     }
 
     return id;
 }
 
 std::string ShaderLoader::readFileContentsFromPath(const char* path) {
-    try {
-        std::ifstream file(path);
-        file.exceptions(std::ios::badbit | std::ios::failbit);
-        if(file.bad()) {
-            std::cout << "ERROR: Failed to open file at [" << path << "].\n" << std::endl;
-        }
-
-        std::string content((std::istreambuf_iterator<char>(file)),
-                            (std::istreambuf_iterator<char>()));
-
-        std::cout << "INFO: Loaded shader from [" << path << "].\n" << content << std::endl << std::endl;
-        file.close();
-
-        return content;
-    } catch (std::ifstream::failure e) {
-        std::cout << "ERROR: Failed to read shader file contents from [" << path << "].\n"<< e.what() << std::endl;
-        return nullptr;
+    std::ifstream file(path);
+    file.exceptions(std::ios::badbit | std::ios::failbit);
+    if(file.bad()) {
+        throw std::ios::failure("Failed to open file at [" + std::string(path) + "]");
     }
+
+    std::string content((std::istreambuf_iterator<char>(file)),
+                        (std::istreambuf_iterator<char>()));
+
+    std::cout << "INFO: Loaded shader from [" << path << "].\n" << content << std::endl << std::endl;
+    file.close();
+
+    return content;
 }
