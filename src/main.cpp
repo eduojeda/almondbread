@@ -4,8 +4,8 @@
 int main() {
     GLFWwindow* window = initGLWindow();
 
-    ShaderLoader ShaderLoader("src/shaders/vertex.glsl", "src/shaders/fragment.glsl");
-    int shaderProgramId = ShaderLoader.createProgram();
+    ShaderLoader shaderLoader("src/shaders/vertex.glsl", "src/shaders/fragment.glsl");
+    int shaderProgramId = shaderLoader.createProgram();
 
     float quadVertices[] = {
         // positions         // texture coords
@@ -48,7 +48,7 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    GLubyte *textureData = generateTextureImageData(SCREEN_WIDTH, SCREEN_HEIGHT, 3);
+    GLubyte *textureData = generateTextureImageData(SCREEN_WIDTH, SCREEN_HEIGHT);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
 
     while (!glfwWindowShouldClose(window)) {
@@ -119,16 +119,12 @@ inline int mandelbrot(double cRe, double cIm, int maxModSq, int maxIter) {
     return iter;
 }
 
-GLubyte *generateTextureImageData(int width, int height, int depth) {
-    GLubyte *img = (GLubyte *)malloc(sizeof(GLubyte) * depth * width * height);
+GLubyte *generateTextureImageData(int width, int height) {
+    int depth = 3;
 
-    memset(img, 0x00, sizeof(GLubyte) * depth * width * height);
-
-    int iters = 0;
-    double range = 0.05;
+    double range = 0.02;
     double originRe = -1.4;
     double originIm = 0.0;
-    int maxIters = 10 / range;
 
     double cReInitial = originRe - range / 2.0;
     double cRe = cReInitial;
@@ -136,20 +132,20 @@ GLubyte *generateTextureImageData(int width, int height, int depth) {
     double cReDelta = range / width;
     double cImDelta = range / height;
 
-    int brightness, offset;
+    int iterations = 0;
+    int maxIterations = 15 / range;
+
+    GLubyte *img = (GLubyte *)malloc(sizeof(GLubyte) * depth * width * height);
 
     auto start = std::chrono::high_resolution_clock::now();
 
     for (int y = 0 ; y < height ; y++, cIm += cImDelta) {
         cRe = cReInitial;
         for (int x = 0 ; x < width ; x++, cRe += cReDelta) {
-            iters = mandelbrot(cRe, cIm, 4, maxIters);
+            iterations = mandelbrot(cRe, cIm, 4, maxIterations);
 
-            brightness = (int)((float)iters / maxIters * 255);
-            offset = (y * width + x) * depth;
-            img[offset] = brightness;
-            img[offset+1] = brightness;
-            img[offset+2] = brightness;
+            int offset = (y * width + x) * depth;
+            setColor(&img[offset], iterations, maxIterations);
         }
     }
 
@@ -158,6 +154,14 @@ GLubyte *generateTextureImageData(int width, int height, int depth) {
     std::cout << "Rendering time: " << elapsed.count() << " ms" << std::endl;
 
     return (GLubyte *)img;
+}
+
+void setColor(GLubyte *pixel, int iterations, int maxIterations) {
+    float normIters = (float)iterations / maxIterations;
+
+    pixel[0] = (int)(pow(normIters, 0.8) * 255);
+    pixel[1] = (int)(pow(normIters, 1.0) * 255);
+    pixel[2] = (int)(pow(normIters, 0.5) * 255);
 }
 
 void errorCallback(int error, const char *description) {
