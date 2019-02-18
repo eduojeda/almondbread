@@ -1,8 +1,11 @@
 #include "main.h"
+#include "shader_loader.h"
 
 int main() {
     GLFWwindow* window = initGLWindow();
-    int shaderProgram = setUpShaderProgram();
+
+    ShaderLoader ShaderLoader("src/shaders/vertex.glsl", "src/shaders/fragment.glsl");
+    int shaderProgramId = ShaderLoader.createProgram();
 
     float quadVertices[] = {
         // positions         // texture coords
@@ -54,7 +57,7 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shaderProgram);
+        glUseProgram(shaderProgramId);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -68,44 +71,6 @@ int main() {
 
     glfwTerminate();
     return 0;
-}
-
-int setUpShaderProgram() {
-    int success;
-    char infoLog[512];
-
-    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR: Vertex shader compilation failed.\n" << infoLog << std::endl;
-    }
-
-    int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR: Fragment shader compilation failed.\n" << infoLog << std::endl;
-    }
-
-    int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR: Shader program linking failed.\n" << infoLog << std::endl;
-    }
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    return shaderProgram;
 }
 
 GLFWwindow* initGLWindow() {
@@ -136,7 +101,7 @@ GLFWwindow* initGLWindow() {
     return window;
 }
 
-int mandelbrot(double cRe, double cIm, int maxModSq, int maxIter) {
+inline int mandelbrot(double cRe, double cIm, int maxModSq, int maxIter) {
     double zRe = 0.0;
     double zIm = 0.0;
     double zReSq = 0.0;
@@ -160,10 +125,10 @@ GLubyte *generateTextureImageData(int width, int height, int depth) {
     memset(img, 0x00, sizeof(GLubyte) * depth * width * height);
 
     int iters = 0;
-    int maxIters = 200;
     double range = 0.05;
     double originRe = -1.4;
     double originIm = 0.0;
+    int maxIters = 10 / range;
 
     double cReInitial = originRe - range / 2.0;
     double cRe = cReInitial;
