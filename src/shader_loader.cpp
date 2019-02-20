@@ -37,8 +37,8 @@ int ShaderLoader::createProgram() {
 int ShaderLoader::compileShader(std::string shaderCode, GLenum shaderType) {
     int success;
     char infoLog[512];
-    const char *str = shaderCode.c_str();
-    unsigned int id = glCreateShader(shaderType);
+    const char* str = shaderCode.c_str();
+    int id = glCreateShader(shaderType);
 
     glShaderSource(id, 1, &str, NULL);
     glCompileShader(id);

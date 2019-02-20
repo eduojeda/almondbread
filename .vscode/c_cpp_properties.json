@@ -5,7 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/lib/glfw/include",
                 "${workspaceFolder}/lib/glad/include",
-                "C:\\MinGW\\include"
+                "C:\\mingw-w64\\mingw32\\include"
             ],
             "compilerPath": "C:/MinGW/bin/g++.exe",
             "defines": [

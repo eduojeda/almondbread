@@ -49,15 +49,15 @@ GLFWwindow* initGLWindow() {
     return window;
 }
 
-void errorCallback(int error, const char *description) {
+void errorCallback(int error, const char* description) {
     std::cerr << description << std::endl;
 }
 
-void framebufferSizeCallback(GLFWwindow *window, int width, int height) {
+void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow *window) {
+void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }

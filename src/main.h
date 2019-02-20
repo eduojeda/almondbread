@@ -3,10 +3,10 @@
 #include <iostream>
 #include "fractal_renderer.h"
 
-void framebufferSizeCallback(GLFWwindow *window, int width, int height);
-void processInput(GLFWwindow *window);
-void errorCallback(int error, const char *description);
+void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+void errorCallback(int error, const char* description);
 GLFWwindow* initGLWindow();
 
-const unsigned int VIEWPORT_WIDTH = 900;
-const unsigned int VIEWPORT_HEIGHT = 900;
+const int VIEWPORT_WIDTH = 900;
+const int VIEWPORT_HEIGHT = 900;
