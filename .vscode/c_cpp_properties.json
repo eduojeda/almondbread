@@ -4,16 +4,23 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/lib/glfw/include",
-                "${workspaceFolder}/lib/glad/include",
-                "C:\\mingw-w64\\mingw32\\include"
+                "${workspaceFolder}/lib/glad/include"
             ],
-            "compilerPath": "C:/MinGW/bin/g++.exe",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/lib/glfw/include",
+                    "${workspaceFolder}/lib/glad/include"
+                ],
+                "limitSymbolsToIncludedHeaders": false
+            },
+            "compilerPath": "C:/mingw-w64/mingw32/bin/g++.exe",
             "defines": [
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
             ],
             "cStandard": "c11",
+            "cppStandard": "c++17",
             "intelliSenseMode": "gcc-x64"
         }
     ],
