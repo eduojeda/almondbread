@@ -10,7 +10,7 @@
 class FractalRenderer {
 private:
     int width_, height_;
-    double cReDelta_, cImDelta_;
+    double reDelta_, imDelta_;
     const double range_ = 0.02;
     const double originRe_ = -1.4;
     const double originIm_ = 0.0;

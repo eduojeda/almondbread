@@ -21,8 +21,8 @@ inline int FractalRenderer::mandelbrot(double cRe, double cIm, int maxModSq, int
 FractalRenderer::FractalRenderer(int viewportWidth, int viewportHeight) {
     width_ = viewportWidth;
     height_ = viewportHeight;
-    cReDelta_ = range_ / width_;
-    cImDelta_ = range_ / height_;
+    reDelta_ = range_ / width_;
+    imDelta_ = range_ / height_;
 
     initShaders();
     initQuad();
@@ -109,17 +109,17 @@ GLubyte* FractalRenderer::generateTextureImage() {
 }
 
 void FractalRenderer::renderLinesToBuffer(GLubyte* buffer, int fromLine, int toLine) {
-    double cRe, cIm;
-    double cReBase = originRe_ - range_ / 2.0;
-    double cImBase = originIm_ - range_ / 2.0;
+    double re, im;
+    double reBase = originRe_ - range_ / 2.0;
+    double imBase = originIm_ - range_ / 2.0;
     int iterations = 0;
     int maxIterations = quality_ / range_;
 
     for (int y = fromLine ; y < toLine ; y++) {
-        cIm = cImBase + cImDelta_ * y;
+        im = imBase + imDelta_ * y;
         for (int x = 0 ; x < width_ ; x++) {
-            cRe = cReBase + cReDelta_ * x;
-            iterations = mandelbrot(cRe, cIm, 4, maxIterations);
+            re = reBase + reDelta_ * x;
+            iterations = mandelbrot(re, im, 4, maxIterations);
 
             int offset = (y * width_ + x) * colorDepth_;
             setColor(&buffer[offset], iterations, maxIterations);
