@@ -2,19 +2,21 @@
 
 int main() {
     GLFWwindow* window = initGLWindow();
-
+    ParamInput paramInput(window);
     FractalRenderer renderer(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
 
     while (!glfwWindowShouldClose(window)) {
-        processInput(window);
+        //glfwWaitEvents(); //instead of changed_?
+        if (paramInput.hasChanged()) {
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            renderer.draw(paramInput);
 
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+            glfwSwapBuffers(window);
+        }
 
-        renderer.draw();
-
-        glfwSwapBuffers(window);
         glfwPollEvents();
+        paramInput.update();
     }
 
     glfwTerminate();
@@ -41,6 +43,8 @@ GLFWwindow* initGLWindow() {
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
     glfwSetErrorCallback(errorCallback);
 
+    glfwSwapInterval(1);
+
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cerr << "Failed to initialize GLAD." << std::endl;
         exit(-1);
@@ -55,10 +59,4 @@ void errorCallback(int error, const char* description) {
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
-}
-
-void processInput(GLFWwindow* window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, true);
-    }
 }

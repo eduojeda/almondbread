@@ -21,17 +21,31 @@ inline int FractalRenderer::mandelbrot(double cRe, double cIm, int maxModSq, int
 FractalRenderer::FractalRenderer(int viewportWidth, int viewportHeight) {
     width_ = viewportWidth;
     height_ = viewportHeight;
-    reDelta_ = range_ / width_;
-    imDelta_ = range_ / height_;
 
     initShaders();
     initQuad();
     initTexture();
 }
 
-void FractalRenderer::draw() {
+void FractalRenderer::draw(ParamInput& paramInput) {
+    auto start = std::chrono::high_resolution_clock::now();
+
+    GLubyte* textureData = generateTextureImage(
+        paramInput.getOriginRe(),
+        paramInput.getOriginIm(),
+        paramInput.getRange()
+    );
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
+    free(textureData);
+
     glBindVertexArray(VAO_);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double, std::milli> elapsed = end - start;
+    std::cout << "draw(): " << elapsed.count() << " ms" << std::endl;
 }
 
 void FractalRenderer::initShaders() {
@@ -70,19 +84,14 @@ void FractalRenderer::initTexture() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    GLubyte* textureData = generateTextureImage();
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
-    free(textureData);
 }
 
-GLubyte* FractalRenderer::generateTextureImage() {
+GLubyte* FractalRenderer::generateTextureImage(double originRe, double originIm, double range) {
     std::vector<std::thread> threads;
     const int numThreads = std::thread::hardware_concurrency();
     const int chunkSize = height_ / numThreads;
 
     GLubyte* img = (GLubyte* )malloc(sizeof(GLubyte) * colorDepth_ * width_ * height_);
-
     memset(img, 0x66, sizeof(GLubyte) * colorDepth_ * width_ * height_);
 
     auto start = std::chrono::high_resolution_clock::now();
@@ -90,9 +99,17 @@ GLubyte* FractalRenderer::generateTextureImage() {
     int remainingLines = height_;
     for (int i = numThreads ; i > 0 ; i--) {
         int fromLine = (i > 1) ? remainingLines - chunkSize : 0;
-        threads.push_back(std::thread(&FractalRenderer::renderLinesToBuffer, this, std::ref(img), fromLine, remainingLines));
+        threads.push_back(std::thread(
+            &FractalRenderer::renderLinesToBuffer,
+            this,
+            std::ref(img),
+            fromLine,
+            remainingLines,
+            originRe,
+            originIm,
+            range
+        ));
 
-        std::cout << "Launched thread to render lines " << fromLine << " to " << remainingLines << std::endl;
         remainingLines -= chunkSize;
     }
 
@@ -101,24 +118,25 @@ GLubyte* FractalRenderer::generateTextureImage() {
     }
 
     auto end = std::chrono::high_resolution_clock::now();
-
     std::chrono::duration<double, std::milli> elapsed = end - start;
-    std::cout << "Rendering time: " << elapsed.count() << " ms" << std::endl;
+    std::cout << "render fractal: " << elapsed.count() << " ms" << std::endl;
 
     return (GLubyte*) img;
 }
 
-void FractalRenderer::renderLinesToBuffer(GLubyte* buffer, int fromLine, int toLine) {
+void FractalRenderer::renderLinesToBuffer(GLubyte* buffer, int fromLine, int toLine, double originRe, double originIm, double range) {
     double re, im;
-    double reBase = originRe_ - range_ / 2.0;
-    double imBase = originIm_ - range_ / 2.0;
+    double reBase = originRe - range / 2.0;
+    double imBase = originIm - range / 2.0;
+    double reDelta = range / width_;
+    double imDelta = range / height_;
     int iterations = 0;
-    int maxIterations = quality_ / range_;
+    int maxIterations = (quality_ / range) + quality_;
 
     for (int y = fromLine ; y < toLine ; y++) {
-        im = imBase + imDelta_ * y;
+        im = imBase + imDelta * y;
         for (int x = 0 ; x < width_ ; x++) {
-            re = reBase + reDelta_ * x;
+            re = reBase + reDelta * x;
             iterations = mandelbrot(re, im, 4, maxIterations);
 
             int offset = (y * width_ + x) * colorDepth_;
@@ -129,7 +147,6 @@ void FractalRenderer::renderLinesToBuffer(GLubyte* buffer, int fromLine, int toL
 
 void FractalRenderer::setColor(GLubyte* pixel, int iterations, int maxIterations) {
     float normIters = (float)iterations / maxIterations;
-
     pixel[0] = (int)(pow(normIters, 0.8) * 255);
     pixel[1] = (int)(pow(normIters, 1.0) * 255);
     pixel[2] = (int)(pow(normIters, 0.5) * 255);

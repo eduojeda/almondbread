@@ -6,15 +6,11 @@
 #include <vector>
 #include <thread>
 #include "shader_loader.h"
+#include "param_input.h"
 
 class FractalRenderer {
 private:
     int width_, height_;
-    double reDelta_, imDelta_;
-    const double range_ = 0.02;
-    const double originRe_ = -1.4;
-    const double originIm_ = 0.0;
-
     const int quality_ = 15;
     const int colorDepth_ = 3;
     GLuint VBO_, VAO_, EBO_;
@@ -35,15 +31,15 @@ private:
     void initShaders();
     void initQuad();
     void initTexture();
-    GLubyte* generateTextureImage();
-    void renderLinesToBuffer(GLubyte* buffer, int fromLine, int toLine);
+    GLubyte* generateTextureImage(double originRe, double originIm, double range);
+    void renderLinesToBuffer(GLubyte* buffer, int fromLine, int toLine, double originRe, double originIm, double range);
     void setColor(GLubyte* pixel, int iterations, int maxIterations);
     int mandelbrot(double cRe, double cIm, int maxModSq, int maxIter);
 
 public:
     FractalRenderer(int viewportWidth, int viewportHeight);
     ~FractalRenderer();
-    void draw();
+    void draw(ParamInput& input);
 };
 
 #endif
