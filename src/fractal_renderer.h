@@ -14,6 +14,7 @@ private:
     const int quality_ = 15;
     const int colorDepth_ = 3;
     GLuint VBO_, VAO_, EBO_;
+    GLubyte* textureImgBuffer_;
 
     float quadVertices_[20] = {
         // positions         // texture coords
@@ -31,7 +32,7 @@ private:
     void initShaders();
     void initQuad();
     void initTexture();
-    GLubyte* generateTextureImage(double originRe, double originIm, double range);
+    void generateTextureImage(GLubyte* buffer, double originRe, double originIm, double range);
     void renderLinesToBuffer(GLubyte* buffer, int fromLine, int toLine, double originRe, double originIm, double range);
     void setColor(GLubyte* pixel, int iterations, int maxIterations);
     int mandelbrot(double cRe, double cIm, int maxModSq, int maxIter);
