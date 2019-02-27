@@ -1,13 +1,13 @@
 #include "fractal_renderer.h"
 
-inline int FractalRenderer::mandelbrot(double cRe, double cIm, int maxModSq, int maxIter) {
+inline int FractalRenderer::mandelbrot(double cRe, double cIm, int maxIter) {
     double zRe = 0.0;
     double zIm = 0.0;
     double zReSq = 0.0;
     double zImSq = 0.0;
     int iter = 0;
 
-    while (zReSq + zImSq < maxModSq && iter < maxIter) {
+    while (zReSq + zImSq < 4.0 && iter < maxIter) {
         zReSq = zRe * zRe;
         zImSq = zIm * zIm;
 
@@ -140,7 +140,7 @@ void FractalRenderer::renderLinesToBuffer(GLubyte* buffer, int fromLine, int toL
         im = imBase + imDelta * y;
         for (int x = 0 ; x < width_ ; x++) {
             re = reBase + reDelta * x;
-            iterations = mandelbrot(re, im, 4, maxIterations);
+            iterations = mandelbrot(re, im, maxIterations);
 
             int offset = (y * width_ + x) * colorDepth_;
             setColor(&buffer[offset], iterations, maxIterations);

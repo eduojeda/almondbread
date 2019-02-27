@@ -35,7 +35,7 @@ private:
     void generateTextureImage(GLubyte* buffer, double originRe, double originIm, double range);
     void renderLinesToBuffer(GLubyte* buffer, int fromLine, int toLine, double originRe, double originIm, double range);
     void setColor(GLubyte* pixel, int iterations, int maxIterations);
-    int mandelbrot(double cRe, double cIm, int maxModSq, int maxIter);
+    int mandelbrot(double cRe, double cIm, int maxIter);
 
 public:
     FractalRenderer(int viewportWidth, int viewportHeight);
