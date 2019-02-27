@@ -149,7 +149,13 @@ void FractalRenderer::renderLinesToBuffer(GLubyte* buffer, int fromLine, int toL
 }
 
 void FractalRenderer::setColor(GLubyte* pixel, int iterations, int maxIterations) {
+    if (iterations == maxIterations) {
+        memset(pixel, 0x00, 3);
+        return;
+    }
+
     float normIters = (float)iterations / maxIterations;
+
     pixel[0] = (int)(pow(normIters, 0.8) * 255);
     pixel[1] = (int)(pow(normIters, 1.0) * 255);
     pixel[2] = (int)(pow(normIters, 0.5) * 255);
