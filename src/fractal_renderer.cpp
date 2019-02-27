@@ -10,8 +10,12 @@ inline int FractalRenderer::mandelbrot(double cRe, double cIm, int maxModSq, int
     while (zReSq + zImSq < maxModSq && iter < maxIter) {
         zReSq = zRe * zRe;
         zImSq = zIm * zIm;
-        zIm = 2.0 * zRe * zIm + cIm;
+
+        zIm = zRe * zIm;
+        zIm += zIm; // same as x2, multiplication is expensive
+        zIm += cIm;
         zRe = zReSq - zImSq + cRe;
+
         iter++;
     }
 
