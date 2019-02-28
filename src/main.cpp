@@ -1,7 +1,7 @@
 #include "main.h"
 
 int main() {
-    GLFWwindow* window = initGLWindow();
+    GLFWwindow* window = initializeGLWindow();
     ParamInput paramInput(window);
     FractalRenderer renderer(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
 
@@ -23,7 +23,7 @@ int main() {
     return 0;
 }
 
-GLFWwindow* initGLWindow() {
+GLFWwindow* initializeGLWindow() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);

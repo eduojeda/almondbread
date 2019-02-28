@@ -4,7 +4,7 @@
 #include "fractal_renderer.h"
 #include "param_input.h"
 
-GLFWwindow* initGLWindow();
+GLFWwindow* initializeGLWindow();
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void errorCallback(int error, const char* description);
 

@@ -1,40 +1,43 @@
-#include "shader_loader.h"
+#include "shader_program.h"
 
-ShaderLoader::ShaderLoader(const char* vertexShaderPath, const char* fragmentShaderPath) {
+ShaderProgram::ShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath) {
     try {
-        vertexCode = readFileContentsFromPath(vertexShaderPath);
-        fragmentCode = readFileContentsFromPath(fragmentShaderPath);
+        vertexCode_ = readFileContentsFromPath(vertexShaderPath);
+        fragmentCode_ = readFileContentsFromPath(fragmentShaderPath);
     } catch (std::exception &e) {
         std::cerr << "Failed to read shader file contents.\n"<< e.what() << std::endl;
     }
 }
 
-int ShaderLoader::createProgram() {
+void ShaderProgram::use() {
+    glUseProgram(programId_);
+}
+
+int ShaderProgram::link() {
     int success;
     char infoLog[512];
-    int programId;
     int vertexId, fragmentId;
 
-    vertexId = compileShader(vertexCode, GL_VERTEX_SHADER);
-    fragmentId = compileShader(fragmentCode, GL_FRAGMENT_SHADER);
+    vertexId = compileShader(vertexCode_, GL_VERTEX_SHADER);
+    fragmentId = compileShader(fragmentCode_, GL_FRAGMENT_SHADER);
 
-    programId = glCreateProgram();
-    glAttachShader(programId, vertexId);
-    glAttachShader(programId, fragmentId);
-    glLinkProgram(programId);
-    glGetProgramiv(programId, GL_LINK_STATUS, &success);
+    programId_ = glCreateProgram();
+    glAttachShader(programId_, vertexId);
+    glAttachShader(programId_, fragmentId);
+    glLinkProgram(programId_);
+    glGetProgramiv(programId_, GL_LINK_STATUS, &success);
     if (!success) {
-        glGetProgramInfoLog(programId, 512, NULL, infoLog);
+        glGetProgramInfoLog(programId_, 512, NULL, infoLog);
         std::cerr << "Shader program linking failed.\n" << infoLog << std::endl;
     }
 
     glDeleteShader(vertexId);
     glDeleteShader(fragmentId);
 
-    return programId;
+    return programId_;
 }
 
-int ShaderLoader::compileShader(std::string shaderCode, GLenum shaderType) {
+int ShaderProgram::compileShader(std::string shaderCode, GLenum shaderType) {
     int success;
     char infoLog[512];
     const char* str = shaderCode.c_str();
@@ -51,7 +54,7 @@ int ShaderLoader::compileShader(std::string shaderCode, GLenum shaderType) {
     return id;
 }
 
-std::string ShaderLoader::readFileContentsFromPath(const char* path) {
+std::string ShaderProgram::readFileContentsFromPath(const char* path) {
     std::ifstream file(path);
     file.exceptions(std::ios::badbit | std::ios::failbit);
     if(file.bad()) {
