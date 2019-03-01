@@ -12,6 +12,10 @@ void ParamInput::update() {
         glfwSetWindowShouldClose(window_, true);
     }
 
+    if (glfwGetKey(window_, GLFW_KEY_TAB) == GLFW_PRESS) {
+        logParams();
+    }
+
     if (glfwGetKey(window_, GLFW_KEY_UP) == GLFW_PRESS) {
         changed_ = true; // do this with some sort of meta magic?
         originIm_ += originStep;
@@ -41,21 +45,42 @@ void ParamInput::update() {
         changed_ = true;
         range_ /= rangeStep;
     }
+
+    if (glfwGetKey(window_, GLFW_KEY_Q) == GLFW_PRESS) {
+        changed_ = true;
+        maxIters_--;
+        if (maxIters_ < 0) {
+            maxIters_ = 0;
+        }
+    }
+
+    if (glfwGetKey(window_, GLFW_KEY_E) == GLFW_PRESS) {
+        changed_ = true;
+        maxIters_++;
+    }
+}
+
+void ParamInput::logParams() {
+    std::cout << "range: " << range_ << std::endl;
+    std::cout << "originRe: " << originRe_ << std::endl;
+    std::cout << "originIm: " << originIm_ << std::endl;
+    std::cout << "maxIters: " << maxIters_ << std::endl;
 }
 
 double ParamInput::getRange() {
-    std::cout << "range: " << range_ << std::endl;
     return range_;
 }
 
 double ParamInput::getOriginRe() {
-    std::cout << "originRe: " << originRe_ << std::endl;
     return originRe_;
 }
 
 double ParamInput::getOriginIm() {
-    std::cout << "originIm: " << originIm_ << std::endl;
     return originIm_;
+}
+
+int ParamInput::getMaxIters() {
+    return maxIters_;
 }
 
 bool ParamInput::hasChanged() {

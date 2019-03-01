@@ -17,11 +17,11 @@ public:
 
 private:
     const int ESCAPE_RADIUS = 4;
-    const int QUALITY = 15;
     const int COLOR_DEPTH = 3;
 
     int width_, height_;
     GLuint VBO_, VAO_, EBO_;
+    ShaderProgram* shaderProgram_;
     GLubyte* textureImgBuffer_;
 
     float quadVertices_[20] = {
@@ -40,10 +40,12 @@ private:
     void initializeShaders();
     void initializeQuad();
     void initializeTexture();
-    void generateTextureImage(GLubyte* buffer, double originRe, double originIm, double range);
-    void renderLinesToBuffer(GLubyte* buffer, int fromLine, int toLine, double originRe, double originIm, double range);
-    void setColor(GLubyte* pixel, int iterations, int maxIterations);
+
     int mandelbrot(double cRe, double cIm, int maxIter);
+    void setFragmentShaderParams(double originRe, double originIm, double range, int maxIterations);
+    void renderToTexture(double originRe, double originIm, double range, int maxIterations);
+    void renderLinesToBuffer(GLubyte* buffer, int fromLine, int toLine, double originRe, double originIm, double range, int maxIterations);
+    void setColor(GLubyte* pixel, int iterations, int maxIterations);
 };
 
 #endif

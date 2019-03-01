@@ -50,6 +50,9 @@ GLFWwindow* initializeGLWindow() {
         exit(-1);
     }
 
+    std::cout << "GL_VENDOR: " << glGetString(GL_VENDOR) << std::endl;
+    std::cout << "GL_RENDERER: " << glGetString(GL_RENDERER) << std::endl;
+
     return window;
 }
 

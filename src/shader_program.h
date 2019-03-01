@@ -10,11 +10,11 @@
 class ShaderProgram {
 public:
     ShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath);
-    int link();
+    void link();
     void use();
+    int programId_; // TODO make private and add uniform helpers!
 
 private:
-    int programId_;
     std::string vertexCode_;
     std::string fragmentCode_;
 

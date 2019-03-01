@@ -13,7 +13,7 @@ void ShaderProgram::use() {
     glUseProgram(programId_);
 }
 
-int ShaderProgram::link() {
+void ShaderProgram::link() {
     int success;
     char infoLog[512];
     int vertexId, fragmentId;
@@ -33,8 +33,6 @@ int ShaderProgram::link() {
 
     glDeleteShader(vertexId);
     glDeleteShader(fragmentId);
-
-    return programId_;
 }
 
 int ShaderProgram::compileShader(std::string shaderCode, GLenum shaderType) {
@@ -64,7 +62,7 @@ std::string ShaderProgram::readFileContentsFromPath(const char* path) {
     std::string content((std::istreambuf_iterator<char>(file)),
                         (std::istreambuf_iterator<char>()));
 
-    std::cout << "INFO: Loaded shader from [" << path << "].\n" << content << std::endl << std::endl;
+    std::cout << "INFO: Loaded shader code from [" << path << "].\n" << std::endl;
     file.close();
 
     return content;
