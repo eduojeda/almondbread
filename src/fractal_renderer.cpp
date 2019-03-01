@@ -39,9 +39,9 @@ void FractalRenderer::setFragmentShaderParams(double originRe, double originIm, 
     double imDelta = range / height_;
 
     int baseLocation = glGetUniformLocation(shaderProgram_->programId_, "base");
-    glUniform2f(baseLocation, reBase, imBase);
+    glUniform2d(baseLocation, reBase, imBase);
     int deltaLocation = glGetUniformLocation(shaderProgram_->programId_, "delta");
-    glUniform2f(deltaLocation, reDelta, imDelta);
+    glUniform2d(deltaLocation, reDelta, imDelta);
     int maxIterationsLocation = glGetUniformLocation(shaderProgram_->programId_, "maxIterations");
     glUniform1i(maxIterationsLocation, maxIterations);
 }

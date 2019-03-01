@@ -62,6 +62,7 @@ void ParamInput::update() {
 
 void ParamInput::logParams() {
     std::cout << "range: " << range_ << std::endl;
+    std::cout << "zoom: " << INITIAL_RANGE / range_ << std::endl;
     std::cout << "originRe: " << originRe_ << std::endl;
     std::cout << "originIm: " << originIm_ << std::endl;
     std::cout << "maxIters: " << maxIters_ << std::endl;

@@ -1,18 +1,18 @@
-#version 330 core
+#version 400 core
 
 in vec2 TexCoord;
 out vec4 fragColor;
 
-uniform vec2 base;
-uniform vec2 delta;
+uniform dvec2 base;
+uniform dvec2 delta;
 uniform int maxIterations;
 
-int mandelbrot(float cRe, float cIm, int maxIter);
+int mandelbrot(double cRe, double cIm, int maxIter);
 vec4 getColor(int iterations, int maxIterations);
 
 void main() {
-    float re = base.x + delta.x * gl_FragCoord.x;
-    float im = base.y + delta.y * gl_FragCoord.y;
+    double re = base.x + delta.x * gl_FragCoord.x;
+    double im = base.y + delta.y * gl_FragCoord.y;
     int iterations = mandelbrot(re, im, maxIterations);
 
     fragColor = getColor(iterations, maxIterations);
@@ -27,11 +27,11 @@ vec4 getColor(int iterations, int maxIterations) {
     return vec4(mod, mod, mod, 1.0);
 }
 
-int mandelbrot(float cRe, float cIm, int maxIter) {
-    float zRe = 0.0;
-    float zIm = 0.0;
-    float zReSq = 0.0;
-    float zImSq = 0.0;
+int mandelbrot(double cRe, double cIm, int maxIter) {
+    double zRe = 0.0;
+    double zIm = 0.0;
+    double zReSq = 0.0;
+    double zImSq = 0.0;
 
     for (int iter = 0 ; iter <= maxIter ; iter++) {
         zReSq = zRe * zRe;

@@ -16,8 +16,10 @@ public:
     void logParams();
 
 private:
+    const double INITIAL_RANGE = 4.0;
+
     GLFWwindow* window_;
-    double range_ = 4.0;
+    double range_ = INITIAL_RANGE;
     double originRe_ = 0.0;
     double originIm_ = 0.0;
     int maxIters_ = 30;
