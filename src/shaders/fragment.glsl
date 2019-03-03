@@ -1,9 +1,12 @@
 #version 400 core
 
-in vec2 TexCoord;
 out vec4 fragColor;
 
-uniform dvec2 base;
+in vec2 TexCoord;
+uniform sampler2D texture1;
+
+uniform bool gpuMode;
+uniform dvec2 start;
 uniform dvec2 delta;
 uniform int maxIterations;
 
@@ -11,11 +14,15 @@ int mandelbrot(double cRe, double cIm, int maxIter);
 vec4 getColor(int iterations, int maxIterations);
 
 void main() {
-    double re = base.x + delta.x * gl_FragCoord.x;
-    double im = base.y + delta.y * gl_FragCoord.y;
-    int iterations = mandelbrot(re, im, maxIterations);
+    if (gpuMode) {
+        double re = start.x + delta.x * gl_FragCoord.x;
+        double im = start.y + delta.y * gl_FragCoord.y;
+        int iterations = mandelbrot(re, im, maxIterations);
 
-    fragColor = getColor(iterations, maxIterations);
+        fragColor = getColor(iterations, maxIterations);
+    } else {
+        fragColor = texture(texture1, TexCoord);
+    }
 };
 
 vec4 getColor(int iterations, int maxIterations) {
@@ -36,7 +43,7 @@ int mandelbrot(double cRe, double cIm, int maxIter) {
     for (int iter = 0 ; iter <= maxIter ; iter++) {
         zReSq = zRe * zRe;
         zImSq = zIm * zIm;
-        if (zReSq + zImSq >= 4) {
+        if (zReSq + zImSq >= 4.0) {
             return iter;
         }
 

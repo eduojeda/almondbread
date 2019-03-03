@@ -34,7 +34,7 @@ GLFWwindow* initializeGLWindow() {
 
     GLFWwindow* window = glfwCreateWindow(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, "Almondbread", NULL, NULL);
     if (window == NULL) {
-        std::cerr << "Failed to create GLFW window." << std::endl;
+        cerr << "Failed to create GLFW window." << endl;
         glfwTerminate();
         exit(-1);
     }
@@ -46,18 +46,18 @@ GLFWwindow* initializeGLWindow() {
     glfwSwapInterval(1);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD." << std::endl;
+        cerr << "Failed to initialize GLAD." << endl;
         exit(-1);
     }
 
-    std::cout << "GL_VENDOR: " << glGetString(GL_VENDOR) << std::endl;
-    std::cout << "GL_RENDERER: " << glGetString(GL_RENDERER) << std::endl;
+    cout << "GL_VENDOR: " << glGetString(GL_VENDOR) << endl;
+    cout << "GL_RENDERER: " << glGetString(GL_RENDERER) << endl;
 
     return window;
 }
 
 void errorCallback(int error, const char* description) {
-    std::cerr << description << std::endl;
+    cerr << description << endl;
 }
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {

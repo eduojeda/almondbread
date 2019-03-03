@@ -18,37 +18,34 @@ FractalRenderer::~FractalRenderer() {
 }
 
 void FractalRenderer::draw(ParamInput& paramInput) {
-    auto start = std::chrono::high_resolution_clock::now();
+    auto begin = chrono::high_resolution_clock::now();
 
-    //renderToTexture(paramInput.getOriginRe(), paramInput.getOriginIm(), paramInput.getRange(), paramInput.getMaxIters());
-    setFragmentShaderParams(paramInput.getOriginRe(), paramInput.getOriginIm(), paramInput.getRange(), paramInput.getMaxIters());
+    double range = paramInput.getRange();
+    complex<double> start = paramInput.getOrigin() - complex<double>(range / 2.0, range / 2.0);
+    complex<double> delta = complex<double>(range / width_, range / height_);
+
+    //renderToTexture(start, delta, paramInput.getMaxIters());
+    setFragmentShaderParams(start, delta, paramInput.getMaxIters());
 
     glBindVertexArray(VAO_);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    auto end = std::chrono::high_resolution_clock::now();
+    auto end = chrono::high_resolution_clock::now();
 
-    std::chrono::duration<double, std::milli> elapsed = end - start;
-    std::cout << "draw(): " << elapsed.count() << " ms" << std::endl;
+    chrono::duration<double, milli> elapsed = end - begin;
+    cout << "draw(): " << elapsed.count() << " ms" << endl;
 }
 
-void FractalRenderer::setFragmentShaderParams(double originRe, double originIm, double range, int maxIterations) {
-    double reBase = originRe - range / 2.0;
-    double imBase = originIm - range / 2.0;
-    double reDelta = range / width_;
-    double imDelta = range / height_;
-
-    int baseLocation = glGetUniformLocation(shaderProgram_->programId_, "base");
-    glUniform2d(baseLocation, reBase, imBase);
-    int deltaLocation = glGetUniformLocation(shaderProgram_->programId_, "delta");
-    glUniform2d(deltaLocation, reDelta, imDelta);
-    int maxIterationsLocation = glGetUniformLocation(shaderProgram_->programId_, "maxIterations");
-    glUniform1i(maxIterationsLocation, maxIterations);
+void FractalRenderer::setFragmentShaderParams(complex<double> start, complex<double> delta, int maxIterations) {
+    glUniform1i(glGetUniformLocation(shaderProgram_->getId(), "gpuMode"), 1);
+    glUniform2d(glGetUniformLocation(shaderProgram_->getId(), "start"), start.real(), start.imag());
+    glUniform2d(glGetUniformLocation(shaderProgram_->getId(), "delta"), delta.real(), delta.imag());
+    glUniform1i(glGetUniformLocation(shaderProgram_->getId(), "maxIterations"), maxIterations);
 }
 
-void FractalRenderer::renderToTexture(double originRe, double originIm, double range, int maxIterations) {
-    std::vector<std::thread> threads;
-    const int numThreads = std::thread::hardware_concurrency();
+void FractalRenderer::renderToTexture(complex<double> start, complex<double> delta, int maxIterations) {
+    vector<thread> threads;
+    const int numThreads = thread::hardware_concurrency();
     const int chunkSize = height_ / numThreads;
 
     memset(textureImgBuffer_, 0x66, sizeof(GLubyte) * COLOR_DEPTH * width_ * height_);
@@ -56,15 +53,14 @@ void FractalRenderer::renderToTexture(double originRe, double originIm, double r
     int remainingLines = height_;
     for (int i = numThreads ; i > 0 ; i--) {
         int fromLine = (i > 1) ? remainingLines - chunkSize : 0;
-        threads.push_back(std::thread(
+        threads.push_back(thread(
             &FractalRenderer::renderLinesToBuffer,
             this,
-            std::ref(textureImgBuffer_),
+            ref(textureImgBuffer_),
             fromLine,
             remainingLines,
-            originRe,
-            originIm,
-            range,
+            start,
+            delta,
             maxIterations
         ));
 
@@ -78,18 +74,14 @@ void FractalRenderer::renderToTexture(double originRe, double originIm, double r
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB, GL_UNSIGNED_BYTE, textureImgBuffer_);
 }
 
-void FractalRenderer::renderLinesToBuffer(GLubyte* buffer, int fromLine, int toLine, double originRe, double originIm, double range, int maxIterations) {
+void FractalRenderer::renderLinesToBuffer(GLubyte* buffer, int fromLine, int toLine, complex<double> start, complex<double> delta, int maxIterations) {
     double re, im;
-    double reBase = originRe - range / 2.0;
-    double imBase = originIm - range / 2.0;
-    double reDelta = range / width_;
-    double imDelta = range / height_;
     int iterations = 0;
 
     for (int y = fromLine ; y < toLine ; y++) {
-        im = imBase + imDelta * y;
+        im = start.imag() + delta.imag() * y;
         for (int x = 0 ; x < width_ ; x++) {
-            re = reBase + reDelta * x;
+            re = start.real() + delta.real() * x;
             iterations = mandelbrot(re, im, maxIterations);
 
             int offset = (y * width_ + x) * COLOR_DEPTH;

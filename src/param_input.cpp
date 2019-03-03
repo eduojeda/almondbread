@@ -2,6 +2,7 @@
 
 ParamInput::ParamInput(GLFWwindow* window) {
     window_ = window;
+    origin_ = complex<double>(0.0, 0.0);
 }
 
 void ParamInput::update() {
@@ -18,22 +19,22 @@ void ParamInput::update() {
 
     if (glfwGetKey(window_, GLFW_KEY_UP) == GLFW_PRESS) {
         changed_ = true; // do this with some sort of meta magic?
-        originIm_ += originStep;
+        origin_ += complex<double>(0.0, originStep);
     }
 
     if (glfwGetKey(window_, GLFW_KEY_DOWN) == GLFW_PRESS) {
         changed_ = true;
-        originIm_ -= originStep;
+        origin_ -= complex<double>(0.0, originStep);
     }
 
     if (glfwGetKey(window_, GLFW_KEY_RIGHT) == GLFW_PRESS) {
         changed_ = true;
-        originRe_ += originStep;
+        origin_ += complex<double>(originStep, 0.0);
     }
 
     if (glfwGetKey(window_, GLFW_KEY_LEFT) == GLFW_PRESS) {
         changed_ = true;
-        originRe_ -= originStep;
+        origin_ -= complex<double>(originStep, 0.0);
     }
 
     if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS) {
@@ -61,23 +62,18 @@ void ParamInput::update() {
 }
 
 void ParamInput::logParams() {
-    std::cout << "range: " << range_ << std::endl;
-    std::cout << "zoom: " << INITIAL_RANGE / range_ << std::endl;
-    std::cout << "originRe: " << originRe_ << std::endl;
-    std::cout << "originIm: " << originIm_ << std::endl;
-    std::cout << "maxIters: " << maxIters_ << std::endl;
+    cout << "range: " << range_ << endl;
+    cout << "zoom: " << INITIAL_RANGE / range_ << endl;
+    cout << "origin: " << origin_ << endl;
+    cout << "maxIters: " << maxIters_ << endl;
+}
+
+complex<double> ParamInput::getOrigin() {
+    return origin_;
 }
 
 double ParamInput::getRange() {
     return range_;
-}
-
-double ParamInput::getOriginRe() {
-    return originRe_;
-}
-
-double ParamInput::getOriginIm() {
-    return originIm_;
 }
 
 int ParamInput::getMaxIters() {

@@ -4,9 +4,13 @@ ShaderProgram::ShaderProgram(const char* vertexShaderPath, const char* fragmentS
     try {
         vertexCode_ = readFileContentsFromPath(vertexShaderPath);
         fragmentCode_ = readFileContentsFromPath(fragmentShaderPath);
-    } catch (std::exception &e) {
-        std::cerr << "Failed to read shader file contents.\n"<< e.what() << std::endl;
+    } catch (exception &e) {
+        cerr << "Failed to read shader file contents.\n"<< e.what() << endl;
     }
+}
+
+int ShaderProgram::getId() {
+    return programId_;
 }
 
 void ShaderProgram::use() {
@@ -28,14 +32,14 @@ void ShaderProgram::link() {
     glGetProgramiv(programId_, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(programId_, 512, NULL, infoLog);
-        std::cerr << "Shader program linking failed.\n" << infoLog << std::endl;
+        cerr << "Shader program linking failed.\n" << infoLog << endl;
     }
 
     glDeleteShader(vertexId);
     glDeleteShader(fragmentId);
 }
 
-int ShaderProgram::compileShader(std::string shaderCode, GLenum shaderType) {
+int ShaderProgram::compileShader(string shaderCode, GLenum shaderType) {
     int success;
     char infoLog[512];
     const char* str = shaderCode.c_str();
@@ -46,23 +50,23 @@ int ShaderProgram::compileShader(std::string shaderCode, GLenum shaderType) {
     glGetShaderiv(id, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(id, 512, NULL, infoLog);
-        std::cerr << "Shader compilation failed.\n" << infoLog << std::endl;
+        cerr << "Shader compilation failed.\n" << infoLog << endl;
     }
 
     return id;
 }
 
-std::string ShaderProgram::readFileContentsFromPath(const char* path) {
-    std::ifstream file(path);
-    file.exceptions(std::ios::badbit | std::ios::failbit);
+string ShaderProgram::readFileContentsFromPath(const char* path) {
+    ifstream file(path);
+    file.exceptions(ios::badbit | ios::failbit);
     if(file.bad()) {
-        throw std::ios::failure("Failed to open file at [" + std::string(path) + "]");
+        throw ios::failure("Failed to open file at [" + string(path) + "]");
     }
 
-    std::string content((std::istreambuf_iterator<char>(file)),
-                        (std::istreambuf_iterator<char>()));
+    string content((istreambuf_iterator<char>(file)),
+                        (istreambuf_iterator<char>()));
 
-    std::cout << "INFO: Loaded shader code from [" << path << "].\n" << std::endl;
+    cout << "INFO: Loaded shader code from [" << path << "].\n" << endl;
     file.close();
 
     return content;
