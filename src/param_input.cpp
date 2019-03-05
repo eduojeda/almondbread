@@ -6,8 +6,69 @@ ParamInput::ParamInput(GLFWwindow* window) {
 }
 
 void ParamInput::update() {
-    const double originStep = range_ / 100.0;
-    const double rangeStep = 0.95; // const? pull out?
+    complex<double> panDirection(0.0, 0.0);
+    const double panSpeed = range_ / 100.0;
+    const double zoomSpeed = 0.95; // const? pull out?
+
+//     if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+//         int width, height;
+//         double x, y;
+
+//         glfwGetWindowSize(window_, &width, &height);
+//         glfwGetCursorPos(window_, &x, &y);
+
+//         complex<double> start = origin_ - complex<double>(range_ / 2.0, range_ / 2.0);
+//         complex<double> delta = complex<double>(range_ / width, range_ / height);
+//         target_ = complex<double>(start.real() + delta.real() * x, start.imag() + delta.imag() * y);
+
+// //        panDirection = polar(1.0, 1.0 / tan(y - height / 2.0 / x - width / 2.0));
+//         //panDirection = complex<double>(x - width / 2.0, -(y - height / 2.0));
+//         //range_ *= zoomSpeed;
+//         changed_ = true;
+//     }
+
+    if (glfwGetKey(window_, GLFW_KEY_UP) == GLFW_PRESS) {
+        panDirection += complex<double>(0.0, 1.0);
+        changed_ = true;
+    }
+
+    if (glfwGetKey(window_, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        panDirection -= complex<double>(0.0, 1.0);
+        changed_ = true;
+    }
+
+    if (glfwGetKey(window_, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+        panDirection += complex<double>(1.0, 0.0);
+        changed_ = true;
+    }
+
+    if (glfwGetKey(window_, GLFW_KEY_LEFT) == GLFW_PRESS) {
+        panDirection -= complex<double>(1.0, 0.0);
+        changed_ = true;
+    }
+
+    if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS) {
+        range_ *= zoomSpeed;
+        changed_ = true;
+    }
+
+    if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS) {
+        range_ /= zoomSpeed;
+        changed_ = true;
+    }
+
+    if (glfwGetKey(window_, GLFW_KEY_Q) == GLFW_PRESS) {
+        maxIters_--;
+        if (maxIters_ < 1) {
+            maxIters_ = 1;
+        }
+        changed_ = true;
+    }
+
+    if (glfwGetKey(window_, GLFW_KEY_E) == GLFW_PRESS) {
+        maxIters_++;
+        changed_ = true;
+    }
 
     if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window_, true);
@@ -17,47 +78,8 @@ void ParamInput::update() {
         logParams();
     }
 
-    if (glfwGetKey(window_, GLFW_KEY_UP) == GLFW_PRESS) {
-        changed_ = true; // do this with some sort of meta magic?
-        origin_ += complex<double>(0.0, originStep);
-    }
-
-    if (glfwGetKey(window_, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        changed_ = true;
-        origin_ -= complex<double>(0.0, originStep);
-    }
-
-    if (glfwGetKey(window_, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-        changed_ = true;
-        origin_ += complex<double>(originStep, 0.0);
-    }
-
-    if (glfwGetKey(window_, GLFW_KEY_LEFT) == GLFW_PRESS) {
-        changed_ = true;
-        origin_ -= complex<double>(originStep, 0.0);
-    }
-
-    if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS) {
-        changed_ = true;
-        range_ *= rangeStep;
-    }
-
-    if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS) {
-        changed_ = true;
-        range_ /= rangeStep;
-    }
-
-    if (glfwGetKey(window_, GLFW_KEY_Q) == GLFW_PRESS) {
-        changed_ = true;
-        maxIters_--;
-        if (maxIters_ < 0) {
-            maxIters_ = 0;
-        }
-    }
-
-    if (glfwGetKey(window_, GLFW_KEY_E) == GLFW_PRESS) {
-        changed_ = true;
-        maxIters_++;
+    if (abs(panDirection) > 0) {
+        origin_ += panDirection / abs(panDirection) * panSpeed;
     }
 }
 

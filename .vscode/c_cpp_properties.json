@@ -4,12 +4,14 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/lib/glfw/include",
-                "${workspaceFolder}/lib/glad/include"
+                "${workspaceFolder}/lib/glad/include",
+                "${workspaceFolder}/lib/stb"
             ],
             "browse": {
                 "path": [
                     "${workspaceFolder}/lib/glfw/include",
-                    "${workspaceFolder}/lib/glad/include"
+                    "${workspaceFolder}/lib/glad/include",
+                    "${workspaceFolder}/lib/stb"
                 ],
                 "limitSymbolsToIncludedHeaders": false
             },

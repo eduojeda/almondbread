@@ -24,25 +24,14 @@ private:
 
     int width_, height_;
     GLuint VBO_, VAO_, EBO_;
+    GLuint screenTexture_, paletteTexture_;
     ShaderProgram* shaderProgram_;
     GLubyte* textureImgBuffer_;
 
-    float quadVertices_[20] = {
-        // positions         // texture coords
-         1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
-         1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
-        -1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,  0.0f, 1.0f
-    };
-
-    int quadIndices_[6] = {
-        0, 1, 3,
-        1, 2, 3
-    };
-
     void initializeShaders();
-    void initializeQuad();
-    void initializeTexture();
+    void initializeScreenQuad();
+    void initializeScreenTexture();
+    void initializePaletteTexture(const char* path);
 
     int mandelbrot(double cRe, double cIm, int maxIter);
     void setFragmentShaderParams(complex<double> start, complex<double> delta, int maxIterations);

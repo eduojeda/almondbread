@@ -1,13 +1,18 @@
 #include "fractal_renderer.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_ONLY_PNG
+#include <stb_image.h>
+
 FractalRenderer::FractalRenderer(int viewportWidth, int viewportHeight) {
     width_ = viewportWidth;
     height_ = viewportHeight;
     textureImgBuffer_ = (GLubyte* )malloc(sizeof(GLubyte) * COLOR_DEPTH * width_ * height_);
 
     initializeShaders();
-    initializeQuad();
-    initializeTexture();
+    initializeScreenQuad();
+    initializeScreenTexture();
+    initializePaletteTexture("res/palette.png");
 }
 
 FractalRenderer::~FractalRenderer() {
@@ -24,8 +29,14 @@ void FractalRenderer::draw(ParamInput& paramInput) {
     complex<double> start = paramInput.getOrigin() - complex<double>(range / 2.0, range / 2.0);
     complex<double> delta = complex<double>(range / width_, range / height_);
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, screenTexture_);
     //renderToTexture(start, delta, paramInput.getMaxIters());
+
     setFragmentShaderParams(start, delta, paramInput.getMaxIters());
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_1D, paletteTexture_);
 
     glBindVertexArray(VAO_);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -131,15 +142,28 @@ void FractalRenderer::initializeShaders() {
     shaderProgram_->use();
 }
 
-void FractalRenderer::initializeQuad() {
+void FractalRenderer::initializeScreenQuad() {
+    float quadVertices[20] = {
+        // positions         // texture coords
+         1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
+         1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
+        -1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,  0.0f, 1.0f
+    };
+
+    int quadIndices[6] = {
+        0, 1, 3,
+        1, 2, 3
+    };
+
     glGenVertexArrays(1, &VAO_);
     glGenBuffers(1, &VBO_);
     glGenBuffers(1, &EBO_);
     glBindVertexArray(VAO_);
     glBindBuffer(GL_ARRAY_BUFFER, VBO_);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices_), quadVertices_, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices_), quadIndices_, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
 
     // positions
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
@@ -152,14 +176,35 @@ void FractalRenderer::initializeQuad() {
     glBindVertexArray(0);
 }
 
-void FractalRenderer::initializeTexture() {
-    GLuint texture;
-
+void FractalRenderer::initializeScreenTexture() {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glGenTextures(1, &screenTexture_);
+    glBindTexture(GL_TEXTURE_2D, screenTexture_);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    glUniform1i(glGetUniformLocation(shaderProgram_->getId(), "screenTexture"), 0);
+}
+
+void FractalRenderer::initializePaletteTexture(const char* path) {
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glGenTextures(1, &paletteTexture_);
+    glBindTexture(GL_TEXTURE_1D, paletteTexture_);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    int width, height, channels;
+    unsigned char *data = stbi_load(path, &width, &height, &channels, 0);
+    if (data) {
+        glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, width, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);
+    } else {
+        cerr << "Failed to load palette texture from " << path << endl;
+    }
+
+    glUniform1i(glGetUniformLocation(shaderProgram_->getId(), "paletteTexture"), 1);
 }

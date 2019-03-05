@@ -24,6 +24,7 @@ private:
     GLFWwindow* window_;
     double range_ = INITIAL_RANGE;
     complex<double> origin_;
+    complex<double> target_;
     int maxIters_ = 30;
     bool changed_ = true;
 };

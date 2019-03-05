@@ -3,7 +3,8 @@
 out vec4 fragColor;
 
 in vec2 TexCoord;
-uniform sampler2D texture1;
+uniform sampler2D screenTexture;
+uniform sampler1D paletteTexture;
 
 uniform bool gpuMode;
 uniform dvec2 start;
@@ -21,17 +22,17 @@ void main() {
 
         fragColor = getColor(iterations, maxIterations);
     } else {
-        fragColor = texture(texture1, TexCoord);
+        fragColor = mix(texture(paletteTexture, 0.5), texture(screenTexture, TexCoord), 0.5);
     }
 };
 
 vec4 getColor(int iterations, int maxIterations) {
     if (iterations == maxIterations) {
-        return vec4(0.0, 0.0, 0.0, 1.0);
+        return texture(paletteTexture, 0.0);
     }
 
-    float mod = float(iterations) / float(maxIterations);
-    return vec4(mod, mod, mod, 1.0);
+    float norm = float(iterations) / float(maxIterations);
+    return texture(paletteTexture, norm);
 }
 
 int mandelbrot(double cRe, double cIm, int maxIter) {
