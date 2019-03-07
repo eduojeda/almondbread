@@ -23,8 +23,6 @@ FractalRenderer::~FractalRenderer() {
 }
 
 void FractalRenderer::draw(ParamInput& paramInput) {
-    auto begin = chrono::high_resolution_clock::now();
-
     double range = paramInput.getRange();
     complex<double> start = paramInput.getOrigin() - complex<double>(range / 2.0, range / 2.0);
     complex<double> delta = complex<double>(range / width_, range / height_);
@@ -40,11 +38,6 @@ void FractalRenderer::draw(ParamInput& paramInput) {
 
     glBindVertexArray(VAO_);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-    auto end = chrono::high_resolution_clock::now();
-
-    chrono::duration<double, milli> elapsed = end - begin;
-    cout << "draw(): " << elapsed.count() << " ms" << endl;
 }
 
 void FractalRenderer::setFragmentShaderParams(complex<double> start, complex<double> delta, int maxIterations) {
