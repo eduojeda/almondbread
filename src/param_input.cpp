@@ -2,8 +2,6 @@
 
 ParamInput::ParamInput(GLFWwindow* window) {
     window_ = window;
-    origin_ = complex<double>(0.0, 0.0);
-
     GLFWcursor* cursor = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR);
     glfwSetCursor(window_, cursor);
 }
@@ -18,8 +16,8 @@ complex<double> ParamInput::screenToComplex(int x, int y, int width, int height)
 
 void ParamInput::update() {
     int width, height;
-    complex<double> panVector(0.0, 0.0);
     const double panUnit = range_ / 5.0;
+    complex<double> panVector(0.0, 0.0);
 
     glfwGetWindowSize(window_, &width, &height);
 
@@ -74,15 +72,15 @@ void ParamInput::update() {
     }
 
     if (glfwGetKey(window_, GLFW_KEY_Q) == GLFW_PRESS) {
-        maxIters_ -= 5;
-        if (maxIters_ < 1) {
-            maxIters_ = 1;
+        quality_--;
+        if (quality_ < 1) {
+            quality_ = 1;
         }
         changed_ = true;
     }
 
     if (glfwGetKey(window_, GLFW_KEY_E) == GLFW_PRESS) {
-        maxIters_ += 5;
+        quality_++;
         changed_ = true;
     }
 
@@ -103,7 +101,7 @@ void ParamInput::logParams() {
     cout << "range: " << range_ << endl;
     cout << "zoom: " << INITIAL_RANGE / range_ << endl;
     cout << "origin: " << origin_ << endl;
-    cout << "maxIters: " << maxIters_ << endl;
+    cout << "maxIters: " << getMaxIters() << endl;
 }
 
 complex<double> ParamInput::getOrigin() {
@@ -115,7 +113,9 @@ double ParamInput::getRange() {
 }
 
 int ParamInput::getMaxIters() {
-    return maxIters_;
+    int width, height;
+    glfwGetWindowSize(window_, &width, &height);
+    return quality_ * pow(log10(width / range_), 1.25);
 }
 
 bool ParamInput::hasChanged() {
