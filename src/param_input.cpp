@@ -3,62 +3,78 @@
 ParamInput::ParamInput(GLFWwindow* window) {
     window_ = window;
     origin_ = complex<double>(0.0, 0.0);
+
+    GLFWcursor* cursor = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR);
+    glfwSetCursor(window_, cursor);
+}
+
+complex<double> ParamInput::screenToComplex(int x, int y, int width, int height) {
+    complex<double> start = origin_ - complex<double>(range_ / 2.0, range_ / 2.0);
+    complex<double> delta = complex<double>(range_ / width, range_ / height);
+
+    y = height - y; // screen coords are upside down
+    return complex<double>(start.real() + delta.real() * x, start.imag() + delta.imag() * y);
 }
 
 void ParamInput::update() {
-    complex<double> panDirection(0.0, 0.0);
-    const double panSpeed = range_ / 100.0;
-    const double zoomSpeed = 0.95; // const? pull out?
+    int width, height;
+    complex<double> panVector(0.0, 0.0);
+    const double panUnit = range_ / 5.0;
 
-//     if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-//         int width, height;
-//         double x, y;
+    glfwGetWindowSize(window_, &width, &height);
 
-//         glfwGetWindowSize(window_, &width, &height);
-//         glfwGetCursorPos(window_, &x, &y);
+    if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+        if (!mouseDown_) {
+            double x, y;
+            glfwGetCursorPos(window_, &x, &y);
+            zoomTarget_ = screenToComplex(x, y, width, height);
 
-//         complex<double> start = origin_ - complex<double>(range_ / 2.0, range_ / 2.0);
-//         complex<double> delta = complex<double>(range_ / width, range_ / height);
-//         target_ = complex<double>(start.real() + delta.real() * x, start.imag() + delta.imag() * y);
+            glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+            mouseDown_ = true;
+        }
 
-// //        panDirection = polar(1.0, 1.0 / tan(y - height / 2.0 / x - width / 2.0));
-//         //panDirection = complex<double>(x - width / 2.0, -(y - height / 2.0));
-//         //range_ *= zoomSpeed;
-//         changed_ = true;
-//     }
+        panVector = zoomTarget_ - origin_;
+        range_ *= ZOOM_FACTOR;
+        changed_ = true;
+    }
+
+    if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+        glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        mouseDown_ = false;
+    }
 
     if (glfwGetKey(window_, GLFW_KEY_UP) == GLFW_PRESS) {
-        panDirection += complex<double>(0.0, 1.0);
+        panVector += complex<double>(0.0, panUnit);
         changed_ = true;
     }
 
     if (glfwGetKey(window_, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        panDirection -= complex<double>(0.0, 1.0);
+        panVector -= complex<double>(0.0, panUnit);
         changed_ = true;
     }
 
     if (glfwGetKey(window_, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-        panDirection += complex<double>(1.0, 0.0);
+        panVector += complex<double>(panUnit, 0.0);
         changed_ = true;
     }
 
     if (glfwGetKey(window_, GLFW_KEY_LEFT) == GLFW_PRESS) {
-        panDirection -= complex<double>(1.0, 0.0);
+        panVector -= complex<double>(panUnit, 0.0);
         changed_ = true;
     }
 
     if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS) {
-        range_ *= zoomSpeed;
+        range_ *= ZOOM_FACTOR;
         changed_ = true;
     }
 
     if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS) {
-        range_ /= zoomSpeed;
+        range_ /= ZOOM_FACTOR;
         changed_ = true;
     }
 
     if (glfwGetKey(window_, GLFW_KEY_Q) == GLFW_PRESS) {
-        maxIters_--;
+        maxIters_ -= 5;
         if (maxIters_ < 1) {
             maxIters_ = 1;
         }
@@ -66,7 +82,7 @@ void ParamInput::update() {
     }
 
     if (glfwGetKey(window_, GLFW_KEY_E) == GLFW_PRESS) {
-        maxIters_++;
+        maxIters_ += 5;
         changed_ = true;
     }
 
@@ -78,8 +94,8 @@ void ParamInput::update() {
         logParams();
     }
 
-    if (abs(panDirection) > 0) {
-        origin_ += panDirection / abs(panDirection) * panSpeed;
+    if (abs(panVector) > 0.0) {
+        origin_ += panVector * PAN_FACTOR;
     }
 }
 

@@ -19,14 +19,20 @@ public:
     bool hasChanged();
 
 private:
+    const double ZOOM_FACTOR = 0.99;
+    const double PAN_FACTOR = 0.02;
     const double INITIAL_RANGE = 4.0;
+    const double INITIAL_MAX_ITERS = 30;
 
     GLFWwindow* window_;
-    double range_ = INITIAL_RANGE;
     complex<double> origin_;
-    complex<double> target_;
-    int maxIters_ = 30;
+    complex<double> zoomTarget_;
+    double range_ = INITIAL_RANGE;
+    int maxIters_ = INITIAL_MAX_ITERS;
     bool changed_ = true;
+    bool mouseDown_ = false;
+
+    complex<double> screenToComplex(int x, int y, int width, int height);
 };
 
 #endif
