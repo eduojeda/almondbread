@@ -137,7 +137,7 @@ void FractalRenderer::setColor(GLubyte* pixel, int iterations, int maxIterations
 }
 
 void FractalRenderer::initializeShaders() {
-    shaderProgram_ = new ShaderProgram("src/shaders/vertex.glsl", "src/shaders/fragment.glsl");
+    shaderProgram_ = new ShaderProgram("res/shaders/vertex.glsl", "res/shaders/fragment.glsl");
     shaderProgram_->link();
     shaderProgram_->use();
 }
