@@ -33,7 +33,7 @@ private:
     void initializePaletteTexture(const char* path);
 
     int mandelbrot(double cRe, double cIm, int maxIter);
-    void setFragmentShaderParams(complex<double> start, complex<double> delta, int maxIterations);
+    void setFragmentShaderParams(complex<double> start, complex<double> delta, complex<double> cursorCoords, int maxIterations);
     void renderToTexture(complex<double> start, complex<double> delta, int maxIterations);
     void renderLinesToBuffer(GLubyte* buffer, int fromLine, int toLine, complex<double> start, complex<double> delta, int maxIterations);
     void setColor(GLubyte* pixel, int iterations, int maxIterations);

@@ -26,12 +26,13 @@ void FractalRenderer::draw(ParamInput& paramInput) {
     double range = paramInput.getRange();
     complex<double> start = paramInput.getOrigin() - complex<double>(range / 2.0, range / 2.0);
     complex<double> delta = complex<double>(range / width_, range / height_);
+    complex<double> cursorCoords = paramInput.getCursorCoords();
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, screenTexture_);
     //renderToTexture(start, delta, paramInput.getMaxIters());
 
-    setFragmentShaderParams(start, delta, paramInput.getMaxIters());
+    setFragmentShaderParams(start, delta, cursorCoords, paramInput.getMaxIters());
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_1D, paletteTexture_);
@@ -40,10 +41,11 @@ void FractalRenderer::draw(ParamInput& paramInput) {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-void FractalRenderer::setFragmentShaderParams(complex<double> start, complex<double> delta, int maxIterations) {
+void FractalRenderer::setFragmentShaderParams(complex<double> start, complex<double> delta, complex<double> cursorCoords, int maxIterations) {
     glUniform1i(glGetUniformLocation(shaderProgram_->getId(), "gpuMode"), 1);
     glUniform2d(glGetUniformLocation(shaderProgram_->getId(), "start"), start.real(), start.imag());
     glUniform2d(glGetUniformLocation(shaderProgram_->getId(), "delta"), delta.real(), delta.imag());
+    glUniform2d(glGetUniformLocation(shaderProgram_->getId(), "cursorCoords"), cursorCoords.real(), cursorCoords.imag());
     glUniform1i(glGetUniformLocation(shaderProgram_->getId(), "maxIterations"), maxIterations);
 }
 

@@ -14,12 +14,13 @@ public:
     void logParams();
 
     complex<double> getOrigin();
+    complex<double> getCursorCoords();
     double getRange();
     int getMaxIters();
     bool hasChanged();
 
 private:
-    const complex<double> INITIAL_ORIGIN = complex<double>(-0.5, 0.0);
+    const complex<double> INITIAL_ORIGIN = complex<double>(0.0, 0.0);
     const double INITIAL_RANGE = 3.3;
     const double ZOOM_FACTOR = 0.98;
     const double PAN_FACTOR = 0.03;
@@ -29,10 +30,12 @@ private:
     bool changed_ = true;
     bool mouseDown_ = false;
     complex<double> zoomTarget_;
+    complex<double> cursorCoords_;
     complex<double> origin_ = INITIAL_ORIGIN;
     double range_ = INITIAL_RANGE;
     int quality_ = INITIAL_QUALITY;
 
+    void updateCursorCoords();
     complex<double> screenToComplex(int x, int y, int width, int height);
 };
 

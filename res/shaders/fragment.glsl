@@ -9,16 +9,19 @@ uniform sampler1D paletteTexture;
 uniform bool gpuMode;
 uniform dvec2 start;
 uniform dvec2 delta;
+uniform dvec2 cursorCoords;
 uniform int maxIterations;
 
-int mandelbrot(double cRe, double cIm, int maxIter);
+int mandelbrot(double zRe, double zIm, double cRe, double cIm, int maxIter);
 vec4 getColor(int iterations, int maxIterations);
 
 void main() {
     if (gpuMode) {
         double re = start.x + delta.x * gl_FragCoord.x;
         double im = start.y + delta.y * gl_FragCoord.y;
-        int iterations = mandelbrot(re, im, maxIterations);
+
+        //int iterations = mandelbrot(0.0, 0.0, re, im, maxIterations); // Mandelbrot
+        int iterations = mandelbrot(re, im, cursorCoords.x, cursorCoords.y, maxIterations); // Julia
 
         fragColor = getColor(iterations, maxIterations);
     } else {
@@ -35,9 +38,7 @@ vec4 getColor(int iterations, int maxIterations) {
     return texture(paletteTexture, norm);
 }
 
-int mandelbrot(double cRe, double cIm, int maxIter) {
-    double zRe = 0.0;
-    double zIm = 0.0;
+int mandelbrot(double zRe, double zIm, double cRe, double cIm, int maxIter) {
     double zReSq = 0.0;
     double zImSq = 0.0;
 

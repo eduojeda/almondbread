@@ -6,26 +6,15 @@ ParamInput::ParamInput(GLFWwindow* window) {
     glfwSetCursor(window_, cursor);
 }
 
-complex<double> ParamInput::screenToComplex(int x, int y, int width, int height) {
-    complex<double> start = origin_ - complex<double>(range_ / 2.0, range_ / 2.0);
-    complex<double> delta = complex<double>(range_ / width, range_ / height);
-
-    y = height - y; // screen coords are upside down
-    return complex<double>(start.real() + delta.real() * x, start.imag() + delta.imag() * y);
-}
-
 void ParamInput::update() {
-    int width, height;
     const double panUnit = range_ / 5.0;
     complex<double> panVector(0.0, 0.0);
 
-    glfwGetWindowSize(window_, &width, &height);
+    updateCursorCoords();
 
     if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
         if (!mouseDown_) {
-            double x, y;
-            glfwGetCursorPos(window_, &x, &y);
-            zoomTarget_ = screenToComplex(x, y, width, height);
+            zoomTarget_ = getCursorCoords();
 
             glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
             mouseDown_ = true;
@@ -92,6 +81,7 @@ void ParamInput::update() {
         logParams();
     }
 
+    // Update origin if necessary
     if (abs(panVector) > 0.0) {
         origin_ += panVector * PAN_FACTOR;
     }
@@ -101,11 +91,17 @@ void ParamInput::logParams() {
     cout << "range: " << range_ << endl;
     cout << "zoom: " << INITIAL_RANGE / range_ << endl;
     cout << "origin: " << origin_ << endl;
+    cout << "cursorCoords: " << cursorCoords_ << endl;
+    cout << "quality: " << quality_ << endl;
     cout << "maxIters: " << getMaxIters() << endl;
 }
 
 complex<double> ParamInput::getOrigin() {
     return origin_;
+}
+
+complex<double> ParamInput::getCursorCoords() {
+    return cursorCoords_;
 }
 
 double ParamInput::getRange() {
@@ -125,4 +121,26 @@ bool ParamInput::hasChanged() {
     }
 
     return false;
+}
+
+void ParamInput::updateCursorCoords() {
+    double x, y;
+    int width, height;
+
+    glfwGetWindowSize(window_, &width, &height);
+    glfwGetCursorPos(window_, &x, &y);
+
+    complex<double> current = screenToComplex(x, y, width, height);
+    if (cursorCoords_ != current) {
+        cursorCoords_ = current;
+        changed_ = true;
+    }
+}
+
+complex<double> ParamInput::screenToComplex(int x, int y, int width, int height) {
+    complex<double> start = origin_ - complex<double>(range_ / 2.0, range_ / 2.0);
+    complex<double> delta = complex<double>(range_ / width, range_ / height);
+
+    y = height - y; // screen coords are upside down
+    return complex<double>(start.real() + delta.real() * x, start.imag() + delta.imag() * y);
 }
