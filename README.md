@@ -12,8 +12,8 @@ This program is quite GPU intensive and so requires a relatively poweful and mod
 [Spacebar] Show Julia set  
 [W] Zoom in  
 [S] Zoom out  
-[Q] Lower maximum iterations  
-[E] Increase maximum iterations  
+[A] Lower maximum iterations  
+[D] Increase maximum iterations  
 
 ## Compiling
 I have only compiled this under Windows 10 using mingw-w64, but it should be possible to run it in Linux and Mac without much pain. Instructions coming soon...
