@@ -10,10 +10,12 @@ class Palette {
 public:
     Palette(int size, short depth);
     ~Palette();
-    virtual unsigned char* getPaletteData() = 0;
+    unsigned char* getData();
+    int getSize();
+    short getDepth();
 
 protected:
-    unsigned char* paletteData_;
+    unsigned char* data_;
     int size_;
     short depth_;
 };

@@ -1,10 +1,22 @@
 #include "palette.h"
 
 Palette::Palette(int size, short depth): size_(size), depth_(depth) {
-    paletteData_ = (unsigned char*)malloc(sizeof(unsigned char) * size_ * depth_);
-    memset(paletteData_, 0x66, sizeof(unsigned char) * size_ * depth_);
+    data_ = (unsigned char*)malloc(sizeof(unsigned char) * size_ * depth_);
+    memset(data_, 0x66, sizeof(unsigned char) * size_ * depth_);
 }
 
 Palette::~Palette() {
-    free(paletteData_);
+    free(data_);
+}
+
+unsigned char* Palette::getData() {
+    return data_;
+}
+
+int Palette::getSize() {
+    return size_;
+}
+
+short Palette::getDepth() {
+    return depth_;
 }

@@ -1,9 +1,5 @@
 #include "fractal_renderer.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#define STBI_ONLY_PNG
-#include <stb_image.h>
-
 FractalRenderer::FractalRenderer(int viewportWidth, int viewportHeight) {
     width_ = viewportWidth;
     height_ = viewportHeight;
@@ -184,8 +180,6 @@ void FractalRenderer::initializeScreenTexture() {
 }
 
 void FractalRenderer::initializePaletteTexture(const char* path) {
-    RainbowPalette palette(256, 3);
-
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glGenTextures(1, &paletteTexture_);
     glBindTexture(GL_TEXTURE_1D, paletteTexture_);
@@ -194,13 +188,12 @@ void FractalRenderer::initializePaletteTexture(const char* path) {
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-    // int width, height, channels;
-    // unsigned char* data = stbi_load(path, &width, &height, &channels, 0);
-    unsigned char* data = palette.getPaletteData();
+    // RainbowPalette palette(256, 3);
+    ImagePalette palette(path);
+    unsigned char* data = palette.getData();
 
     if (data) {
         glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        stbi_image_free(data);
     } else {
         cerr << "Failed to load palette texture from " << path << endl;
     }
