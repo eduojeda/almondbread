@@ -10,6 +10,7 @@ using namespace std;
 
 #include "shader_program.h"
 #include "param_input.h"
+#include "rainbow_palette.h"
 
 class FractalRenderer {
 public:
