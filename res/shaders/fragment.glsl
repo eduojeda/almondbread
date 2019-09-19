@@ -31,7 +31,7 @@ void main() {
 
 vec4 getColor(int iterations, int maxIterations) {
     if (iterations == maxIterations) {
-        return texture(paletteTexture, 0.0);
+        return texture(paletteTexture, 1.0);
     }
 
     float norm = float(iterations) / float(maxIterations);

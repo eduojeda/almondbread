@@ -188,12 +188,12 @@ void FractalRenderer::initializePaletteTexture(const char* path) {
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-    // RainbowPalette palette(256, 3);
-    ImagePalette palette(path);
+    RainbowPalette palette(256, 3);
+    // ImagePalette palette(path);
     unsigned char* data = palette.getData();
 
     if (data) {
-        glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, palette.getSize(), 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     } else {
         cerr << "Failed to load palette texture from " << path << endl;
     }
