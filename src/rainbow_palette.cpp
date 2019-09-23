@@ -13,8 +13,6 @@ RainbowPalette::RainbowPalette(int size, int depth): Palette(size, depth) {
         data_[idx] = calculateChannelValue(i, size, 0); // red
         data_[idx+1] = calculateChannelValue(i, size, 2 * M_PI / 3); // green
         data_[idx+2] = calculateChannelValue(i, size, 4 * M_PI / 3); // blue
-
-        printf("%02x %02x %02x\n", data_[idx], data_[idx+1], data_[idx+2]);
     }
 }
 
