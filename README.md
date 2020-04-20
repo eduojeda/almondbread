@@ -1,6 +1,12 @@
 # Almondbread
 
-Almondbread is a GPU-accelerated Mandelbrot set renderer. It allows you to zoom into the fractal in realtime (limited by the GPU's maximum floating point precision). It also supports rendering the corresponding Julia set for the point under the cursor, which makes for trippy user-controlled visuals.
+Almondbread is a GPU-accelerated Mandelbrot set renderer. It allows you to zoom into the fractal in realtime (limited by the GPU's maximum floating point precision):
+
+![](res/mandelzoom_demo.mp4)
+
+It also supports rendering the corresponding Julia set for the point under the cursor, which makes for trippy user-controlled visuals:
+
+![](res/julia_demo.mp4)
 
 It was written as a way for me to better understand fractals, and also to learn some shader programming basics.
 
