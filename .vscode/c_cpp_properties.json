@@ -15,7 +15,7 @@
                 ],
                 "limitSymbolsToIncludedHeaders": false
             },
-            "compilerPath": "C:/mingw-w64/mingw32/bin/g++.exe",
+            "compilerPath": "C:/mingw-w64/mingw64/bin/g++.exe",
             "defines": [
                 "_DEBUG",
                 "UNICODE",

@@ -4,11 +4,14 @@
         {
             "label": "build almondbread",
             "type": "shell",
-            "command": "g++ -g src/*.cpp lib/glad/src/glad.c -Wall -O3 -ffast-math -pthread -std=c++0x -D GLFW_DLL -I lib/glfw/include -I lib/glad/include -I lib/stb -L lib/glfw/lib-mingw-w64 -lglfw3dll -lopengl32 -o build/almondbread.exe",
+            "command": "g++ -g src/*.cpp lib/glad/src/glad.c -Wall -O3 -ffast-math -std=c++0x -D GLFW_DLL -I lib/glfw/include -I lib/glad/include -I lib/stb -L lib/glfw/lib-mingw-w64 -lglfw3dll -lopengl32 -o build/almondbread.exe",
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
         }
     ]
 }
