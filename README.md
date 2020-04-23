@@ -1,10 +1,10 @@
 # Almondbread
 
-Almondbread is a GPU-accelerated Mandelbrot set renderer written in C++. It allows you to zoom into the fractal in realtime (limited by the GPU's maximum floating point precision):
+Almondbread is a GPU-accelerated Mandelbrot set renderer written in C++. It allows you to look around and zoom into the fractal in realtime:
 
 ![](res/mandelzoom_demo.webp)
 
-It also supports rendering the corresponding Julia set for the point under the cursor, which makes for trippy user-controlled visuals:
+It also supports rendering the corresponding Julia set for the point under the cursor, which makes for some nice trippy user-controlled visuals:
 
 ![](res/julia_demo.webp)
 
@@ -22,4 +22,4 @@ This program is quite GPU intensive and so requires a relatively poweful and mod
 [D] Increase maximum iterations  
 
 ## Compiling
-I have only compiled this under Windows 10 using mingw-w64, but it should be possible to run it in Linux and Mac without much pain. Instructions coming soon...
+I have only compiled this under Windows 10 using mingw-w64, but it should be possible to build it for Linux and MacOS without much modification. The compiler command can found in .vscode/tasks.json, if you wanna give it a go.
