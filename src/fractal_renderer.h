@@ -13,13 +13,20 @@ using namespace std;
 #include "rainbow_palette.h"
 #include "image_palette.h"
 
+enum ShaderPrecision { PRECISION_FLOAT, PRECISION_DOUBLE_FLOAT, PRECISION_DOUBLE };
+
 // Apple's OpenGL runs on top of Metal, which has no hardware double precision: a double-precision
-// shader silently falls back to software rendering there. Float limits zoom depth but stays on the GPU.
+// shader silently falls back to software rendering there. Double-float emulation (a pair of floats
+// per value, ~48 bits of mantissa) keeps rendering on the GPU with most of the zoom depth.
+// Override with -DALMONDBREAD_PRECISION=PRECISION_FLOAT etc. to compare modes.
+#ifndef ALMONDBREAD_PRECISION
 #ifdef __APPLE__
-const bool USE_DOUBLE_PRECISION = false;
+#define ALMONDBREAD_PRECISION PRECISION_DOUBLE_FLOAT
 #else
-const bool USE_DOUBLE_PRECISION = true;
+#define ALMONDBREAD_PRECISION PRECISION_DOUBLE
 #endif
+#endif
+const ShaderPrecision SHADER_PRECISION = ALMONDBREAD_PRECISION;
 
 class FractalRenderer {
 public:

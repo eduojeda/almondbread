@@ -1,5 +1,21 @@
 #include "fractal_renderer.h"
 
+static const char* shaderPrecisionDefine() {
+    switch (SHADER_PRECISION) {
+        case PRECISION_DOUBLE: return "#define FRACTAL_PRECISION_DOUBLE\n";
+        case PRECISION_DOUBLE_FLOAT: return "#define FRACTAL_PRECISION_DOUBLE_FLOAT\n";
+        default: return "";
+    }
+}
+
+static const char* shaderPrecisionName() {
+    switch (SHADER_PRECISION) {
+        case PRECISION_DOUBLE: return "double";
+        case PRECISION_DOUBLE_FLOAT: return "double-float";
+        default: return "float";
+    }
+}
+
 FractalRenderer::FractalRenderer(int viewportWidth, int viewportHeight) {
     width_ = viewportWidth;
     height_ = viewportHeight;
@@ -39,16 +55,26 @@ void FractalRenderer::setFragmentShaderParams(complex<double> start, complex<dou
 
 void FractalRenderer::setComplexUniform(const char* name, complex<double> value) {
     int location = glGetUniformLocation(shaderProgram_->getId(), name);
-    if (USE_DOUBLE_PRECISION) {
-        glUniform2d(location, value.real(), value.imag());
-    } else {
-        glUniform2f(location, (float) value.real(), (float) value.imag());
+    switch (SHADER_PRECISION) {
+        case PRECISION_DOUBLE:
+            glUniform2d(location, value.real(), value.imag());
+            break;
+        case PRECISION_DOUBLE_FLOAT: {
+            // Each component becomes a (hi, lo) float pair; lo carries the part of the double that hi cannot hold.
+            float reHi = (float) value.real();
+            float imHi = (float) value.imag();
+            glUniform4f(location, reHi, (float) (value.real() - reHi), imHi, (float) (value.imag() - imHi));
+            break;
+        }
+        case PRECISION_FLOAT:
+            glUniform2f(location, (float) value.real(), (float) value.imag());
+            break;
     }
 }
 
 void FractalRenderer::initializeShaders() {
-    const char* defines = USE_DOUBLE_PRECISION ? "#define FRACTAL_DOUBLE_PRECISION\n" : "";
-    shaderProgram_ = new ShaderProgram("res/shaders/vertex.glsl", "res/shaders/fragment.glsl", defines);
+    cout << "Shader precision: " << shaderPrecisionName() << endl;
+    shaderProgram_ = new ShaderProgram("res/shaders/vertex.glsl", "res/shaders/fragment.glsl", shaderPrecisionDefine());
     shaderProgram_->link();
     shaderProgram_->use();
 }

@@ -34,7 +34,11 @@ make
 ./build/almondbread
 ```
 
-Apple GPUs have no hardware double precision, so on macOS the fractal is computed with 32-bit floats. Rendering stays on the GPU, but the image breaks up at roughly 10,000x zoom instead of the ~10^12x that doubles allow on Windows.
+Apple GPUs have no hardware double precision, and a shader that uses `double` silently falls back to software rendering (about 30 seconds per frame). On macOS the fractal is therefore computed in double-float arithmetic: each value is a pair of floats that together give about 48 bits of mantissa. It runs on the GPU roughly 9x slower than plain float and zooms to about 10^11x before the image breaks up, compared with ~10^4x for plain float and ~10^12x for real doubles. The other modes can be built for comparison:
+
+```
+make clean && make PRECISION=FLOAT    # or DOUBLE_FLOAT, DOUBLE
+```
 
 ### Linux
 Not tested, but the macOS Makefile should need only minor changes (link against your distro's GLFW and OpenGL instead of the Apple frameworks).
