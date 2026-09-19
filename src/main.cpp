@@ -3,7 +3,13 @@
 int main() {
     GLFWwindow* window = initializeGLWindow();
     ParamInput paramInput(window);
-    FractalRenderer renderer(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+
+    // On high-DPI displays (e.g. Retina) the framebuffer is larger than the window, so size
+    // the viewport and the per-pixel shader math from the framebuffer rather than the window.
+    int framebufferWidth, framebufferHeight;
+    glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
+    glViewport(0, 0, framebufferWidth, framebufferHeight);
+    FractalRenderer renderer(framebufferWidth, framebufferHeight);
 
     while (!glfwWindowShouldClose(window)) {
         //glfwWaitEvents(); //instead of changed_?
