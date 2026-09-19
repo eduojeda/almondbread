@@ -1,2 +1,4 @@
 *.code-workspace
 *.exe
+build/almondbread
+build/obj/
