@@ -1,25 +1,34 @@
 #version 400 core
 
+// FRACTAL_DOUBLE_PRECISION is defined by the host when the GPU has hardware double precision.
+#ifdef FRACTAL_DOUBLE_PRECISION
+#define real double
+#define real2 dvec2
+#else
+#define real float
+#define real2 vec2
+#endif
+
 out vec4 fragColor;
 
 uniform sampler1D paletteTexture;
-uniform dvec2 start;
-uniform dvec2 delta;
-uniform dvec2 cursorCoords;
+uniform real2 start;
+uniform real2 delta;
+uniform real2 cursorCoords;
 uniform int maxIterations;
 
-int mandelbrot(double zRe, double zIm, double cRe, double cIm, int maxIter);
+int mandelbrot(real zRe, real zIm, real cRe, real cIm, int maxIter);
 vec4 getColor(int iterations, int maxIterations);
 
 void main() {
-    double re = start.x + delta.x * gl_FragCoord.x;
-    double im = start.y + delta.y * gl_FragCoord.y;
+    real re = start.x + delta.x * gl_FragCoord.x;
+    real im = start.y + delta.y * gl_FragCoord.y;
 
     int iterations = mandelbrot(0.0, 0.0, re, im, maxIterations); // Mandelbrot
     //int iterations = mandelbrot(re, im, cursorCoords.x, cursorCoords.y, maxIterations); // Julia
 
     fragColor = getColor(iterations, maxIterations);
-};
+}
 
 vec4 getColor(int iterations, int maxIterations) {
     if (iterations == maxIterations) {
@@ -30,9 +39,9 @@ vec4 getColor(int iterations, int maxIterations) {
     return texture(paletteTexture, norm);
 }
 
-int mandelbrot(double zRe, double zIm, double cRe, double cIm, int maxIter) {
-    double zReSq = 0.0;
-    double zImSq = 0.0;
+int mandelbrot(real zRe, real zIm, real cRe, real cIm, int maxIter) {
+    real zReSq = 0.0;
+    real zImSq = 0.0;
 
     for (int iter = 0 ; iter <= maxIter ; iter++) {
         zReSq = zRe * zRe;
@@ -50,9 +59,9 @@ int mandelbrot(double zRe, double zIm, double cRe, double cIm, int maxIter) {
     return maxIter;
 }
 
-int burningShip(double zRe, double zIm, double cRe, double cIm, int maxIter) {
-    double zReSq = 0.0;
-    double zImSq = 0.0;
+int burningShip(real zRe, real zIm, real cRe, real cIm, int maxIter) {
+    real zReSq = 0.0;
+    real zImSq = 0.0;
 
     for (int iter = 0 ; iter <= maxIter ; iter++) {
         zReSq = zRe * zRe;

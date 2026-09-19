@@ -31,14 +31,24 @@ void FractalRenderer::draw(ParamInput& paramInput) {
 }
 
 void FractalRenderer::setFragmentShaderParams(complex<double> start, complex<double> delta, complex<double> cursorCoords, int maxIterations) {
-    glUniform2d(glGetUniformLocation(shaderProgram_->getId(), "start"), start.real(), start.imag());
-    glUniform2d(glGetUniformLocation(shaderProgram_->getId(), "delta"), delta.real(), delta.imag());
-    glUniform2d(glGetUniformLocation(shaderProgram_->getId(), "cursorCoords"), cursorCoords.real(), cursorCoords.imag());
+    setComplexUniform("start", start);
+    setComplexUniform("delta", delta);
+    setComplexUniform("cursorCoords", cursorCoords);
     glUniform1i(glGetUniformLocation(shaderProgram_->getId(), "maxIterations"), maxIterations);
 }
 
+void FractalRenderer::setComplexUniform(const char* name, complex<double> value) {
+    int location = glGetUniformLocation(shaderProgram_->getId(), name);
+    if (USE_DOUBLE_PRECISION) {
+        glUniform2d(location, value.real(), value.imag());
+    } else {
+        glUniform2f(location, (float) value.real(), (float) value.imag());
+    }
+}
+
 void FractalRenderer::initializeShaders() {
-    shaderProgram_ = new ShaderProgram("res/shaders/vertex.glsl", "res/shaders/fragment.glsl");
+    const char* defines = USE_DOUBLE_PRECISION ? "#define FRACTAL_DOUBLE_PRECISION\n" : "";
+    shaderProgram_ = new ShaderProgram("res/shaders/vertex.glsl", "res/shaders/fragment.glsl", defines);
     shaderProgram_->link();
     shaderProgram_->use();
 }

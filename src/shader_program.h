@@ -10,7 +10,7 @@ using namespace std;
 
 class ShaderProgram {
 public:
-    ShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath);
+    ShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath, const string& defines = "");
     void link();
     void use();
     int getId();
@@ -21,6 +21,7 @@ private:
     string fragmentCode_;
 
     string readFileContentsFromPath(const char* path);
+    string insertAfterVersionDirective(const string& code, const string& defines);
     int compileShader(string shaderCode, GLenum shaderType);
 };
 
