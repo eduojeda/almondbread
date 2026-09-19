@@ -22,4 +22,19 @@ This program is quite GPU intensive and so requires a relatively poweful and mod
 [D] Increase maximum iterations  
 
 ## Compiling
-I have only compiled this under Windows 10 using mingw-w64, but it should be possible to build it for Linux and MacOS without much modification. The compiler command can found in .vscode/tasks.json, if you wanna give it a go.
+### Windows
+Built under Windows 10 using mingw-w64. The compiler command can be found in .vscode/tasks.json.
+
+### macOS
+Install GLFW with Homebrew, then build with make. Run from the repository root, since the shaders and palette are loaded relative to the working directory:
+
+```
+brew install glfw
+make
+./build/almondbread
+```
+
+Apple GPUs have no hardware double precision, so on macOS the fractal is computed with 32-bit floats. Rendering stays on the GPU, but the image breaks up at roughly 10,000x zoom instead of the ~10^12x that doubles allow on Windows.
+
+### Linux
+Not tested, but the macOS Makefile should need only minor changes (link against your distro's GLFW and OpenGL instead of the Apple frameworks).
