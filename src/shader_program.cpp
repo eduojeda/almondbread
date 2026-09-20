@@ -1,9 +1,9 @@
 #include "shader_program.h"
 
-ShaderProgram::ShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath) {
+ShaderProgram::ShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath, const string& defines) {
     try {
-        vertexCode_ = readFileContentsFromPath(vertexShaderPath);
-        fragmentCode_ = readFileContentsFromPath(fragmentShaderPath);
+        vertexCode_ = insertAfterVersionDirective(readFileContentsFromPath(vertexShaderPath), defines);
+        fragmentCode_ = insertAfterVersionDirective(readFileContentsFromPath(fragmentShaderPath), defines);
     } catch (exception &e) {
         cerr << "Failed to read shader file contents.\n"<< e.what() << endl;
     }
@@ -70,4 +70,23 @@ string ShaderProgram::readFileContentsFromPath(const char* path) {
     file.close();
 
     return content;
+}
+
+// GLSL requires #version to be the first line, so extra definitions go right after it.
+string ShaderProgram::insertAfterVersionDirective(const string& code, const string& defines) {
+    if (defines.empty()) {
+        return code;
+    }
+
+    string block = defines;
+    if (block.back() != '\n') {
+        block += '\n';
+    }
+
+    size_t firstLineEnd = code.find('\n');
+    if (firstLineEnd == string::npos) {
+        return code + "\n" + block;
+    }
+
+    return code.substr(0, firstLineEnd + 1) + block + code.substr(firstLineEnd + 1);
 }
