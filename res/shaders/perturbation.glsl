@@ -12,6 +12,10 @@
 // Rebasing (Zhuoran, 2021) restarts the reference at Z_0 whenever the pixel's own orbit comes closer
 // to 0 than its offset, or when the reference orbit runs out. This keeps one reference valid for
 // every pixel, including pixels whose orbit escapes long after the reference's, or never.
+//
+// Bilinear approximation (Zhuoran, 2021) skips most iterations: while dz is small, 2^k steps from
+// reference index m collapse to dz -> A dz + B dc. The CPU builds these as a binary tree (see
+// BilinearApproximation), and each iteration takes the longest run whose radius dz still fits in.
 
 out vec4 fragColor;
 
@@ -22,6 +26,13 @@ uniform vec2 pixelOffset;             // pixel (0, 0) relative to the reference 
 uniform vec2 spacingMantissa;         // pixel size is spacingMantissa * 2^spacingExponent
 uniform int spacingExponent;
 uniform int maxIterations;
+uniform samplerBuffer blaTable;       // per node: (A mantissa, A exponent, log2 R + A exponent), (B mantissa, B exponent, 0)
+uniform int blaLevels;
+uniform int blaLast;                  // reference index the table was built up to; it may trail referenceLast
+uniform int blaLevelStart[32];        // first node of each level; level k covers runs of 2^k starting at 1 + j * 2^k
+
+// Runs shorter than this cost more to apply than to iterate.
+const int BLA_MIN_LEVEL = 2;
 
 // Radius 4 rather than 2: near c = -2 orbits hover just below |z| = 2, closer than a float can tell
 // apart, and no bounded orbit ever exceeds 2. Must match ReferenceOrbit.
@@ -95,19 +106,46 @@ void main() {
     vec4 Z = texelFetch(referenceOrbit, 0);
     int n = 0;
     while (n < maxIterations) {
-        if (Z.w == 0.0) {
-            w = 2.0 * cmul(Z.xy, w) + scale * csqr(w) + d;
-        } else {
-            vec2 sumMantissa;
-            int sumExponent;
-            addScaled(cmul(Z.xy, w), int(Z.z) + e + 1, csqr(w), 2 * e, sumMantissa, sumExponent);
-            addScaled(sumMantissa, sumExponent, dcMantissa, dcExponent, w, e);
-            normalize(w, e);
-            scale = pow2(e);
-            d = scaleByPow2(dcMantissa, dcExponent - e);
+        int steps = 0;
+        if (m > 0 && blaLevels > BLA_MIN_LEVEL) {
+            float log2Size = w == vec2(0.0) ? -1e30 : log2(length(w));
+            int level = min(m == 1 ? 31 : findLSB(m - 1), blaLevels - 1);
+            for (; level >= BLA_MIN_LEVEL; level--) {
+                int span = 1 << level;
+                if (m + span > blaLast || n + span > maxIterations) {
+                    continue;
+                }
+                int node = blaLevelStart[level] + ((m - 1) >> level);
+                vec4 a = texelFetch(blaTable, 2 * node);
+                // |dz| < R, compared as log2 |w| + e + A exponent < log2 R + A exponent.
+                if (float(e + int(a.z)) + log2Size < a.w) {
+                    vec4 b = texelFetch(blaTable, 2 * node + 1);
+                    addScaled(cmul(a.xy, w), int(a.z) + e, cmul(b.xy, dcMantissa), int(b.z) + dcExponent, w, e);
+                    normalize(w, e);
+                    scale = pow2(e);
+                    d = scaleByPow2(dcMantissa, dcExponent - e);
+                    steps = span;
+                    break;
+                }
+            }
         }
-        n++;
-        m++;
+
+        if (steps == 0) {
+            if (Z.w == 0.0) {
+                w = 2.0 * cmul(Z.xy, w) + scale * csqr(w) + d;
+            } else {
+                vec2 sumMantissa;
+                int sumExponent;
+                addScaled(cmul(Z.xy, w), int(Z.z) + e + 1, csqr(w), 2 * e, sumMantissa, sumExponent);
+                addScaled(sumMantissa, sumExponent, dcMantissa, dcExponent, w, e);
+                normalize(w, e);
+                scale = pow2(e);
+                d = scaleByPow2(dcMantissa, dcExponent - e);
+            }
+            steps = 1;
+        }
+        n += steps;
+        m += steps;
         Z = texelFetch(referenceOrbit, m);
 
         // Full value z = Z + dz, for the escape test and for rebasing.
