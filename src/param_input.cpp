@@ -80,6 +80,15 @@ void ParamInput::update() {
         changed_ = true;
     }
 
+    // C steps to the next color scheme once per press, Shift+C to the previous one. Colors are
+    // applied after rendering, so this needs no re-render.
+    bool colorKey = glfwGetKey(window_, GLFW_KEY_C) == GLFW_PRESS;
+    if (colorKey && !colorKeyDown_) {
+        bool shift = glfwGetKey(window_, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window_, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
+        colorScheme_ += shift ? -1 : 1;
+    }
+    colorKeyDown_ = colorKey;
+
     if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window_, true);
     }
@@ -142,6 +151,10 @@ BigComplex ParamInput::getCursorPoint() {
 
 bool ParamInput::isCursorInWindow() {
     return glfwGetWindowAttrib(window_, GLFW_HOVERED) != 0;
+}
+
+int ParamInput::getColorScheme() {
+    return colorScheme_;
 }
 
 FloatExp ParamInput::getZoom() {

@@ -19,7 +19,6 @@
 
 out vec4 fragColor;
 
-uniform sampler1D paletteTexture;
 uniform samplerBuffer referenceOrbit; // (Z.re, Z.im, 0, 0), or (mantissa.re, mantissa.im, exponent, 1) when |Z| < 2^-64
 uniform int referenceLast;            // index of the last stored reference iteration
 uniform vec2 pixelOffset;             // pixel (0, 0) relative to the reference point, in pixels
@@ -39,8 +38,6 @@ const int BLA_MIN_LEVEL = 2;
 const float ESCAPE_RADIUS_SQUARED = 16.0;
 const int MIN_EXPONENT = -160;
 const int MAX_EXPONENT = 127;
-
-vec4 getColor(int iterations, int maxIterations);
 
 float maxAbs(vec2 v) {
     return max(abs(v.x), abs(v.y));
@@ -188,16 +185,6 @@ void main() {
         }
     }
 
-    fragColor = getColor(n, maxIterations);
-}
-
-// Deep views need thousands of iterations but a small window of them spans the whole image, so
-// the palette cycles every 256 iterations instead of being stretched over maxIterations.
-vec4 getColor(int iterations, int maxIterations) {
-    if (iterations == maxIterations) {
-        return texture(paletteTexture, 1.0);
-    }
-
-    float norm = fract(float(iterations) / float(min(maxIterations, 256)));
-    return texture(paletteTexture, norm);
+    // The escape iteration, or -1 for points that never escaped; Colorizer turns it into a color.
+    fragColor = vec4(n == maxIterations ? -1.0 : float(n), 0.0, 0.0, 1.0);
 }

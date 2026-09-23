@@ -3,9 +3,10 @@
 
 #include <glad/glad.h>
 
-// An offscreen image the fractal renders into. Deep frames can take a long time to render, so the
-// fractal is rendered only when the view changes, and each displayed frame copies this image to
-// the screen before drawing the overlay on top.
+// An offscreen image of escape iteration counts that the fractal renders into, one float per pixel
+// with -1 for points that never escaped. Deep frames can take a long time to render, so the fractal
+// is rendered only when the view changes, and each displayed frame colors this image (see
+// Colorizer) before drawing the overlay on top.
 class RenderTarget {
 public:
     RenderTarget(int width, int height);
@@ -13,7 +14,10 @@ public:
 
     // Directs rendering into the image, with the viewport covering all of it.
     void bind();
-    void blitToScreen(int screenWidth, int screenHeight);
+
+    GLuint getTexture() const;
+    int getWidth() const;
+    int getHeight() const;
 
 private:
     int width_, height_;

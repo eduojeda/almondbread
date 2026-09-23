@@ -110,14 +110,12 @@ vec2 df_mul_float(vec2 a, float b) {
 
 out vec4 fragColor;
 
-uniform sampler1D paletteTexture;
 uniform real2 start;
 uniform real2 delta;
 uniform real2 cursorCoords;
 uniform int maxIterations;
 
 int mandelbrot(real zRe, real zIm, real cRe, real cIm, int maxIter);
-vec4 getColor(int iterations, int maxIterations);
 
 void main() {
     real re = real_add(real2_x(start), real_mul_float(real2_x(delta), gl_FragCoord.x));
@@ -126,16 +124,8 @@ void main() {
     int iterations = mandelbrot(real_from_float(0.0), real_from_float(0.0), re, im, maxIterations); // Mandelbrot
     //int iterations = mandelbrot(re, im, real2_x(cursorCoords), real2_y(cursorCoords), maxIterations); // Julia
 
-    fragColor = getColor(iterations, maxIterations);
-}
-
-vec4 getColor(int iterations, int maxIterations) {
-    if (iterations == maxIterations) {
-        return texture(paletteTexture, 1.0);
-    }
-
-    float norm = float(iterations) / float(maxIterations);
-    return texture(paletteTexture, norm);
+    // The escape iteration, or -1 for points that never escaped; Colorizer turns it into a color.
+    fragColor = vec4(iterations == maxIterations ? -1.0 : float(iterations), 0.0, 0.0, 1.0);
 }
 
 int mandelbrot(real zRe, real zIm, real cRe, real cIm, int maxIter) {

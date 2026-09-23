@@ -31,6 +31,8 @@ public:
     BigComplex getCursorPoint();
     bool isCursorInWindow();
     FloatExp getZoom();
+    // Unbounded; colorSchemeAt() wraps it.
+    int getColorScheme();
     // Decimal places needed to tell neighbouring window pixels apart.
     int getCoordinateDecimals();
     FloatExp getRange();
@@ -57,6 +59,8 @@ private:
     double quality_ = INITIAL_QUALITY;
     KeyRepeat lowerIterations_;
     KeyRepeat raiseIterations_;
+    int colorScheme_ = 0;
+    bool colorKeyDown_ = false;
 
     complex<double> cursorViewOffset();
     complex<double> viewOffsetOf(const BigComplex& point, FloatExp range);

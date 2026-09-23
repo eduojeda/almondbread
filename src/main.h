@@ -8,6 +8,7 @@ using namespace std;
 #include <iostream>
 #include <memory>
 
+#include "colorizer.h"
 #include "fractal_renderer.h"
 #include "hud.h"
 #include "perturbation_renderer.h"

@@ -29,13 +29,10 @@ protected:
     int width_, height_;
 
     void initializeScreenQuad();
-    void initializePaletteTexture(ShaderProgram* program, const char* path);
-    void bindPaletteTexture();
     void drawScreenQuad();
 
 private:
     GLuint VBO_ = 0, VAO_ = 0, EBO_ = 0;
-    GLuint paletteTexture_ = 0;
 };
 
 #endif

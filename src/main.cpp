@@ -17,13 +17,17 @@ int main() {
     }
 
     unique_ptr<RenderTarget> fractalImage(new RenderTarget(framebufferWidth, framebufferHeight));
+    unique_ptr<Colorizer> colorizer(new Colorizer());
     unique_ptr<Hud> hud(new Hud(window));
+    int renderedMaxIterations = paramInput.getMaxIters();
 
     while (!glfwWindowShouldClose(window)) {
-        // The fractal is rendered only when the view changes; the overlay is redrawn every frame so
-        // the cursor coordinates follow the mouse.
+        // The fractal is rendered to iteration counts only when the view changes. Coloring and the
+        // overlay happen every frame, so color schemes switch instantly and the cursor coordinates
+        // follow the mouse.
         if (paramInput.hasChanged()) {
             double start = glfwGetTime();
+            renderedMaxIterations = paramInput.getMaxIters();
             fractalImage->bind();
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
@@ -34,7 +38,7 @@ int main() {
 
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
-        fractalImage->blitToScreen(width, height);
+        colorizer->draw(*fractalImage, renderedMaxIterations, paramInput.getColorScheme(), width, height);
         hud->draw(paramInput);
         glfwSwapBuffers(window);
 
@@ -43,6 +47,7 @@ int main() {
     }
 
     hud.reset();
+    colorizer.reset();
     fractalImage.reset();
     renderer.reset();
     glfwTerminate();

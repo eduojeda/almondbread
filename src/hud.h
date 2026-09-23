@@ -9,7 +9,8 @@
 #include "text_overlay.h"
 #include "param_input.h"
 
-// The frame rate, zoom level, iteration limit and the coordinates under the cursor, in the top-left corner.
+// The frame rate, zoom level, iteration limit, color scheme and the coordinates under the cursor, in the
+// top-left corner.
 class Hud {
 public:
     Hud(GLFWwindow* window);

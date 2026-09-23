@@ -4,6 +4,8 @@
 #include <cmath>
 #include <cstdio>
 
+#include "color_schemes.h"
+
 namespace {
 
 // Once a coordinate has too many decimals for one line, this many are kept at each end: the leading
@@ -76,6 +78,7 @@ std::vector<std::string> Hud::lines(ParamInput& input) {
     }
     result.push_back("Zoom " + formatZoom(input.getZoom()));
     result.push_back("Iteration limit " + withThousandsSeparators(input.getMaxIters()));
+    result.push_back("Colors " + colorSchemeAt(input.getColorScheme()).name + " (C to change)");
 
     if (input.isCursorInWindow()) {
         BigComplex point = input.getCursorPoint();

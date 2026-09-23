@@ -1,15 +1,11 @@
 #include "renderer.h"
 
-#include "rainbow_palette.h"
-#include "image_palette.h"
-
 Renderer::Renderer(int viewportWidth, int viewportHeight): width_(viewportWidth), height_(viewportHeight) {}
 
 Renderer::~Renderer() {
     glDeleteVertexArrays(1, &VAO_);
     glDeleteBuffers(1, &VBO_);
     glDeleteBuffers(1, &EBO_);
-    glDeleteTextures(1, &paletteTexture_);
 }
 
 void Renderer::initializeScreenQuad() {
@@ -42,33 +38,6 @@ void Renderer::initializeScreenQuad() {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-}
-
-void Renderer::initializePaletteTexture(ShaderProgram* program, const char* path) {
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glGenTextures(1, &paletteTexture_);
-    glBindTexture(GL_TEXTURE_1D, paletteTexture_);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    RainbowPalette palette(256, 3);
-    // ImagePalette palette(path);
-    unsigned char* data = palette.getData();
-
-    if (data) {
-        glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, palette.getSize(), 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-    } else {
-        cerr << "Failed to load palette texture from " << path << endl;
-    }
-
-    glUniform1i(glGetUniformLocation(program->getId(), "paletteTexture"), 0);
-}
-
-void Renderer::bindPaletteTexture() {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_1D, paletteTexture_);
 }
 
 void Renderer::drawScreenQuad() {

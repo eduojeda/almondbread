@@ -16,7 +16,6 @@ PerturbationRenderer::PerturbationRenderer(int viewportWidth, int viewportHeight
     shaderProgram_->use();
 
     initializeScreenQuad();
-    initializePaletteTexture(shaderProgram_, "res/palette.png");
     glUniform1i(glGetUniformLocation(shaderProgram_->getId(), "referenceOrbit"), 1);
     glUniform1i(glGetUniformLocation(shaderProgram_->getId(), "blaTable"), 2);
 
@@ -71,7 +70,6 @@ void PerturbationRenderer::draw(ParamInput& input) {
         glUniform1iv(glGetUniformLocation(program, "blaLevelStart"), levels, bla_.getLevelStarts().data());
     }
 
-    bindPaletteTexture();
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_BUFFER, orbitTexture_);
     glActiveTexture(GL_TEXTURE2);

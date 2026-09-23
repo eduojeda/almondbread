@@ -19,7 +19,6 @@ static const char* shaderPrecisionName() {
 FractalRenderer::FractalRenderer(int viewportWidth, int viewportHeight): Renderer(viewportWidth, viewportHeight) {
     initializeShaders();
     initializeScreenQuad();
-    initializePaletteTexture(shaderProgram_, "res/palette.png");
 }
 
 FractalRenderer::~FractalRenderer() {
@@ -36,7 +35,6 @@ void FractalRenderer::draw(ParamInput& paramInput) {
 
     setFragmentShaderParams(start, delta, cursorCoords, paramInput.getMaxIters());
 
-    bindPaletteTexture();
     drawScreenQuad();
 }
 
