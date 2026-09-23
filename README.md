@@ -23,20 +23,20 @@ This program is quite GPU intensive and so requires a relatively poweful and mod
 [Tab] Print the zoom level and the exact view center  
 
 ## Deep zoom
-There is no zoom limit other than how long you are willing to wait for a frame. The view center is kept as an arbitrary-precision fixed-point number, and the CPU computes one reference orbit through it at whatever precision the current zoom needs. The GPU then iterates only each pixel's small offset from that orbit (perturbation theory), in floats that carry a separate integer exponent so offsets far below 10^-38 do not underflow. Rebasing, which restarts the reference whenever a pixel's own orbit passes closer to 0 than its offset, keeps that single reference valid for every pixel.
+There is no zoom limit other than how long you are willing to wait for a frame. The view center is kept as an arbitrary-precision fixed-point number, and the CPU computes one reference orbit through it at whatever precision the current zoom needs. The GPU then iterates only each pixel's small offset from that orbit (perturbation theory), in floats that carry a separate integer exponent so offsets far below 10^-38 do not underflow. Rebasing, which restarts the reference whenever a pixel's own orbit passes closer to 0 than its offset, keeps that single reference valid for every pixel. Bilinear approximation skips most of the iterations: while a pixel's offset is small enough, a run of 2^k iterations collapses into one multiply-add, and the CPU precomputes a binary tree of these runs along the reference orbit.
 
-Checked against direct arbitrary-precision computation on a grid of pixels, down to 10^-998: every sampled pixel matches on views around c = i, and 98.4-99.8% match exactly on deep minibrots. The rest are chaotic boundary pixels whose true value changes within a thousandth of a pixel.
+Checked against direct arbitrary-precision computation on a grid of pixels, down to 10^-998: every sampled pixel matches on views around c = i, and 98.2-99.6% match exactly on deep minibrots. The rest are chaotic boundary pixels whose true value changes within a thousandth of a pixel.
 
 Frame times on an Apple M4 Max at 1800x1800, viewing minibrots:
 
 | Zoom | Maximum iterations | Seconds per frame |
 | --- | --- | --- |
-| 10^100 | 9,841 | 0.16 |
-| 10^203 | 23,317 | 0.39 |
-| 10^480 | 67,802 | 1.8 |
-| 10^998 | 168,712 | 5.7 |
+| 10^100 | 9,841 | 0.06 |
+| 10^203 | 23,317 | 0.11 |
+| 10^480 | 67,802 | 0.26 |
+| 10^998 | 168,712 | 0.46 |
 
-Frame time follows the iteration count, which grows with zoom depth; A and D adjust it. Once the iteration limit passes 256 the palette repeats every 256 iterations, so deep views keep their contrast.
+Holding the mouse to zoom at 10^1000 around c = i runs at about 11 ms per frame. Frame time grows with the iteration limit, which rises with zoom depth; A and D adjust it. Once the iteration limit passes 256 the palette repeats every 256 iterations, so deep views keep their contrast.
 
 ## Compiling
 ### Windows
