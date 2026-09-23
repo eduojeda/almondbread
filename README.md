@@ -20,6 +20,23 @@ This program is quite GPU intensive and so requires a relatively poweful and mod
 [S] Zoom out  
 [A] Lower maximum iterations  
 [D] Increase maximum iterations  
+[Tab] Print the zoom level and the exact view center  
+
+## Deep zoom
+There is no zoom limit other than how long you are willing to wait for a frame. The view center is kept as an arbitrary-precision fixed-point number, and the CPU computes one reference orbit through it at whatever precision the current zoom needs. The GPU then iterates only each pixel's small offset from that orbit (perturbation theory), in floats that carry a separate integer exponent so offsets far below 10^-38 do not underflow. Rebasing, which restarts the reference whenever a pixel's own orbit passes closer to 0 than its offset, keeps that single reference valid for every pixel.
+
+Checked against direct arbitrary-precision computation on a grid of pixels, down to 10^-998: every sampled pixel matches on views around c = i, and 98.4-99.8% match exactly on deep minibrots. The rest are chaotic boundary pixels whose true value changes within a thousandth of a pixel.
+
+Frame times on an Apple M4 Max at 1800x1800, viewing minibrots:
+
+| Zoom | Maximum iterations | Seconds per frame |
+| --- | --- | --- |
+| 10^100 | 9,841 | 0.16 |
+| 10^203 | 23,317 | 0.39 |
+| 10^480 | 67,802 | 1.8 |
+| 10^998 | 168,712 | 5.7 |
+
+Frame time follows the iteration count, which grows with zoom depth; A and D adjust it. Once the iteration limit passes 256 the palette repeats every 256 iterations, so deep views keep their contrast.
 
 ## Compiling
 ### Windows
@@ -34,11 +51,14 @@ make
 ./build/almondbread
 ```
 
-Apple GPUs have no hardware double precision, and a shader that uses `double` silently falls back to software rendering (about 30 seconds per frame). On macOS the fractal is therefore computed in double-float arithmetic: each value is a pair of floats that together give about 48 bits of mantissa. It runs on the GPU roughly 9x slower than plain float and zooms to about 10^11x before the image breaks up, compared with ~10^4x for plain float and ~10^12x for real doubles. The other modes can be built for comparison:
+### Precision modes
+The default build renders by perturbation, as described above. The older modes compute each pixel from scratch in the shader and can be built for comparison:
 
 ```
-make clean && make PRECISION=FLOAT    # or DOUBLE_FLOAT, DOUBLE
+make clean && make PRECISION=FLOAT    # or DOUBLE_FLOAT, DOUBLE, ARBITRARY (the default)
 ```
+
+Plain float stops resolving detail at about 10^4x zoom, double-float (a pair of floats per value) at about 10^11x, and double at about 10^12x. Apple GPUs have no hardware doubles, so on macOS the double mode falls back to software rendering at about 30 seconds per frame.
 
 ### Linux
 Not tested, but the macOS Makefile should need only minor changes (link against your distro's GLFW and OpenGL instead of the Apple frameworks).
