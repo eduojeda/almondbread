@@ -14,6 +14,8 @@ This program is quite GPU intensive and so requires a relatively poweful and mod
 
 ## Controls
 [Left Mouse Button] Zoom into point  
+[Right Mouse Button] Zoom out, keeping the point under the cursor in place  
+[Middle Mouse Button] Drag to move around  
 [Arrow Keys] Move around  
 [Spacebar] Show Julia set  
 [W] Zoom in  

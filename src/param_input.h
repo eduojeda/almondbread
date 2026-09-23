@@ -36,6 +36,9 @@ private:
     GLFWwindow* window_;
     bool changed_ = true;
     bool mouseDown_ = false;
+    bool dragging_ = false;
+    BigComplex dragAnchor_;
+    complex<double> dragCursor_;
     BigComplex zoomTarget_;
     BigComplex origin_;
     FloatExp range_ = FloatExp(INITIAL_RANGE);
@@ -44,6 +47,9 @@ private:
     complex<double> cursorViewOffset();
     complex<double> viewOffsetOf(const BigComplex& point, FloatExp range);
     BigComplex pointAtViewOffset(complex<double> offset, FloatExp range);
+    BigComplex offsetFrom(const BigComplex& point, complex<double> offset, FloatExp range);
+    void zoomOutAround(complex<double> cursor);
+    void dragTo(complex<double> cursor);
     void ensurePrecision();
 };
 

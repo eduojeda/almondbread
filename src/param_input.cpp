@@ -34,6 +34,11 @@ void ParamInput::update() {
         mouseDown_ = false;
     }
 
+    if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+        zoomOutAround(cursorViewOffset());
+        changed_ = true;
+    }
+
     if (glfwGetKey(window_, GLFW_KEY_UP) == GLFW_PRESS) {
         panVector += complex<double>(0.0, panUnit);
         changed_ = true;
@@ -87,6 +92,26 @@ void ParamInput::update() {
 
     if (abs(panVector) > 0.0) {
         origin_ = pointAtViewOffset(panVector * PAN_FACTOR, range);
+    }
+
+    // Dragging with the middle button keeps the grabbed point under the cursor. It runs last so it
+    // also holds while zooming. The view is only marked changed when something actually moved,
+    // because holding still over a deep view must not re-render it every frame.
+    if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
+        complex<double> cursor = cursorViewOffset();
+        if (!dragging_) {
+            dragAnchor_ = pointAtViewOffset(cursor, range_);
+            dragCursor_ = cursor;
+            dragging_ = true;
+        }
+        bool zoomed = range_.mantissa != range.mantissa || range_.exponent != range.exponent;
+        if (cursor != dragCursor_ || zoomed) {
+            dragTo(cursor);
+            dragCursor_ = cursor;
+            changed_ = true;
+        }
+    } else {
+        dragging_ = false;
     }
 
     ensurePrecision();
@@ -170,10 +195,25 @@ complex<double> ParamInput::viewOffsetOf(const BigComplex& point, FloatExp range
 }
 
 BigComplex ParamInput::pointAtViewOffset(complex<double> offset, FloatExp range) {
-    int fracLimbs = origin_.fracLimbs();
+    return offsetFrom(origin_, offset, range);
+}
+
+BigComplex ParamInput::offsetFrom(const BigComplex& point, complex<double> offset, FloatExp range) {
+    int fracLimbs = point.fracLimbs();
     return BigComplex(
-        origin_.re + (range * offset.real()).toBigFixed(fracLimbs),
-        origin_.im + (range * offset.imag()).toBigFixed(fracLimbs));
+        point.re + (range * offset.real()).toBigFixed(fracLimbs),
+        point.im + (range * offset.imag()).toBigFixed(fracLimbs));
+}
+
+// Zooms out one step while the point under the cursor stays where it is on screen.
+void ParamInput::zoomOutAround(complex<double> cursor) {
+    BigComplex pinned = pointAtViewOffset(cursor, range_);
+    range_ = range_ / ZOOM_FACTOR;
+    origin_ = offsetFrom(pinned, -cursor, range_);
+}
+
+void ParamInput::dragTo(complex<double> cursor) {
+    origin_ = offsetFrom(dragAnchor_, -cursor, range_);
 }
 
 // The view center needs finer resolution than a pixel as the view shrinks. 2^-12 of the view is
@@ -183,5 +223,6 @@ void ParamInput::ensurePrecision() {
     if (fracLimbs > origin_.fracLimbs()) {
         origin_ = origin_.withFracLimbs(fracLimbs);
         zoomTarget_ = zoomTarget_.withFracLimbs(fracLimbs);
+        dragAnchor_ = dragAnchor_.withFracLimbs(fracLimbs);
     }
 }
