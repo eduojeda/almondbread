@@ -7,20 +7,22 @@ using namespace std;
 #include <complex>
 #include <GLFW/glfw3.h>
 
+#include "big_fixed.h"
+#include "float_exp.h"
+
 class ParamInput {
 public:
     ParamInput(GLFWwindow* window);
     void update();
     void logParams();
 
-    complex<double> getOrigin();
+    const BigComplex& getOrigin();
     complex<double> getCursorCoords();
-    double getRange();
+    FloatExp getRange();
     int getMaxIters();
     bool hasChanged();
 
 private:
-    const complex<double> INITIAL_ORIGIN = complex<double>(0.0, 0.0);
     const double INITIAL_RANGE = 3.3;
     const double ZOOM_FACTOR = 0.98;
     const double PAN_FACTOR = 0.03;
@@ -29,14 +31,15 @@ private:
     GLFWwindow* window_;
     bool changed_ = true;
     bool mouseDown_ = false;
-    complex<double> zoomTarget_;
-    complex<double> cursorCoords_;
-    complex<double> origin_ = INITIAL_ORIGIN;
-    double range_ = INITIAL_RANGE;
+    BigComplex zoomTarget_;
+    BigComplex origin_;
+    FloatExp range_ = FloatExp(INITIAL_RANGE);
     int quality_ = INITIAL_QUALITY;
 
-    void updateCursorCoords();
-    complex<double> screenToComplex(int x, int y, int width, int height);
+    complex<double> cursorViewOffset();
+    complex<double> viewOffsetOf(const BigComplex& point, FloatExp range);
+    BigComplex pointAtViewOffset(complex<double> offset, FloatExp range);
+    void ensurePrecision();
 };
 
 #endif

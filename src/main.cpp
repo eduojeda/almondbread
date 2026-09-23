@@ -9,14 +9,19 @@ int main() {
     int framebufferWidth, framebufferHeight;
     glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
     glViewport(0, 0, framebufferWidth, framebufferHeight);
-    FractalRenderer renderer(framebufferWidth, framebufferHeight);
+    unique_ptr<Renderer> renderer;
+    if (SHADER_PRECISION == PRECISION_ARBITRARY) {
+        renderer.reset(new PerturbationRenderer(framebufferWidth, framebufferHeight));
+    } else {
+        renderer.reset(new FractalRenderer(framebufferWidth, framebufferHeight));
+    }
 
     while (!glfwWindowShouldClose(window)) {
         //glfwWaitEvents(); //instead of changed_?
         if (paramInput.hasChanged()) {
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
-            renderer.draw(paramInput);
+            renderer->draw(paramInput);
 
             glfwSwapBuffers(window);
         }
@@ -25,6 +30,7 @@ int main() {
         paramInput.update();
     }
 
+    renderer.reset();
     glfwTerminate();
     return 0;
 }

@@ -6,8 +6,10 @@ using namespace std;
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <memory>
 
 #include "fractal_renderer.h"
+#include "perturbation_renderer.h"
 #include "param_input.h"
 
 #ifdef _WIN32

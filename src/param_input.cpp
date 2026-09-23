@@ -1,27 +1,31 @@
 #include "param_input.h"
 
+#include <algorithm>
+#include <cmath>
+
 ParamInput::ParamInput(GLFWwindow* window) {
     window_ = window;
+    ensurePrecision();
     GLFWcursor* cursor = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR);
     glfwSetCursor(window_, cursor);
 }
 
 void ParamInput::update() {
-    const double panUnit = range_ / 5.0;
+    // Pans are measured in units of the view size at the start of this update.
+    const FloatExp range = range_;
+    const double panUnit = 1.0 / 5.0;
     complex<double> panVector(0.0, 0.0);
-
-    updateCursorCoords();
 
     if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
         if (!mouseDown_) {
-            zoomTarget_ = getCursorCoords();
+            zoomTarget_ = pointAtViewOffset(cursorViewOffset(), range);
 
             glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
             mouseDown_ = true;
         }
 
-        panVector = zoomTarget_ - origin_;
-        range_ *= ZOOM_FACTOR;
+        panVector = viewOffsetOf(zoomTarget_, range);
+        range_ = range_ * ZOOM_FACTOR;
         changed_ = true;
     }
 
@@ -51,12 +55,12 @@ void ParamInput::update() {
     }
 
     if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS) {
-        range_ *= ZOOM_FACTOR;
+        range_ = range_ * ZOOM_FACTOR;
         changed_ = true;
     }
 
     if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS) {
-        range_ /= ZOOM_FACTOR;
+        range_ = range_ / ZOOM_FACTOR;
         changed_ = true;
     }
 
@@ -81,37 +85,43 @@ void ParamInput::update() {
         logParams();
     }
 
-    // Update origin if necessary
     if (abs(panVector) > 0.0) {
-        origin_ += panVector * PAN_FACTOR;
+        origin_ = pointAtViewOffset(panVector * PAN_FACTOR, range);
     }
+
+    ensurePrecision();
 }
 
 void ParamInput::logParams() {
-    cout << "range: " << range_ << endl;
-    cout << "zoom: " << INITIAL_RANGE / range_ << endl;
-    cout << "origin: " << origin_ << endl;
-    cout << "cursorCoords: " << cursorCoords_ << endl;
+    // Enough decimals to pin the view center down to well below a pixel.
+    int digits = max(10, (int) (-range_.log2() * log10(2.0)) + 8);
+    cout << "range: " << range_.toString() << endl;
+    cout << "zoom: " << (FloatExp(INITIAL_RANGE) / range_).toString() << endl;
+    cout << "origin.re: " << origin_.re.toDecimalString(digits) << endl;
+    cout << "origin.im: " << origin_.im.toDecimalString(digits) << endl;
     cout << "quality: " << quality_ << endl;
     cout << "maxIters: " << getMaxIters() << endl;
 }
 
-complex<double> ParamInput::getOrigin() {
+const BigComplex& ParamInput::getOrigin() {
     return origin_;
 }
 
 complex<double> ParamInput::getCursorCoords() {
-    return cursorCoords_;
+    complex<double> offset = cursorViewOffset();
+    double range = range_.toDouble();
+    return complex<double>(origin_.re.toDouble(), origin_.im.toDouble()) + offset * range;
 }
 
-double ParamInput::getRange() {
+FloatExp ParamInput::getRange() {
     return range_;
 }
 
 int ParamInput::getMaxIters() {
     int width, height;
     glfwGetWindowSize(window_, &width, &height);
-    return quality_ * pow(log10(width / range_), 1.25);
+    double zoomDigits = log10((double) width) - range_.log2() * log10(2.0);
+    return max(1, (int) (quality_ * pow(max(zoomDigits, 0.0), 1.25)));
 }
 
 bool ParamInput::hasChanged() {
@@ -123,24 +133,36 @@ bool ParamInput::hasChanged() {
     return false;
 }
 
-void ParamInput::updateCursorCoords() {
+// Cursor position relative to the view center, in units of the view size.
+complex<double> ParamInput::cursorViewOffset() {
     double x, y;
     int width, height;
 
     glfwGetWindowSize(window_, &width, &height);
     glfwGetCursorPos(window_, &x, &y);
 
-    complex<double> current = screenToComplex(x, y, width, height);
-    if (cursorCoords_ != current) {
-        cursorCoords_ = current;
-        changed_ = true;
-    }
+    // screen coords are upside down
+    return complex<double>(x / width - 0.5, (height - y) / height - 0.5);
 }
 
-complex<double> ParamInput::screenToComplex(int x, int y, int width, int height) {
-    complex<double> start = origin_ - complex<double>(range_ / 2.0, range_ / 2.0);
-    complex<double> delta = complex<double>(range_ / width, range_ / height);
+complex<double> ParamInput::viewOffsetOf(const BigComplex& point, FloatExp range) {
+    BigComplex offset = point - origin_;
+    return complex<double>((FloatExp(offset.re) / range).toDouble(), (FloatExp(offset.im) / range).toDouble());
+}
 
-    y = height - y; // screen coords are upside down
-    return complex<double>(start.real() + delta.real() * x, start.imag() + delta.imag() * y);
+BigComplex ParamInput::pointAtViewOffset(complex<double> offset, FloatExp range) {
+    int fracLimbs = origin_.fracLimbs();
+    return BigComplex(
+        origin_.re + (range * offset.real()).toBigFixed(fracLimbs),
+        origin_.im + (range * offset.imag()).toBigFixed(fracLimbs));
+}
+
+// The view center needs finer resolution than a pixel as the view shrinks. 2^-12 of the view is
+// finer than a pixel on any window up to 4096 pixels wide.
+void ParamInput::ensurePrecision() {
+    int fracLimbs = fracLimbsForStep(range_.log2() - 12.0);
+    if (fracLimbs > origin_.fracLimbs()) {
+        origin_ = origin_.withFracLimbs(fracLimbs);
+        zoomTarget_ = zoomTarget_.withFracLimbs(fracLimbs);
+    }
 }
