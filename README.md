@@ -22,6 +22,8 @@ This program is quite GPU intensive and so requires a relatively poweful and mod
 [D] Increase maximum iterations  
 [Tab] Print the zoom level and the exact view center  
 
+The top-left corner shows the frame rate, the zoom level and the coordinates under the cursor. The frame rate is measured while frames render back to back, such as while zooming; otherwise it shows how long the last frame took. Coordinates carry enough decimals to tell neighbouring pixels apart, and past about 40 decimals the middle digits are elided, keeping the leading ones that say where you are and the trailing ones that change as the cursor moves. Tab prints the full values.
+
 ## Deep zoom
 There is no zoom limit other than how long you are willing to wait for a frame. The view center is kept as an arbitrary-precision fixed-point number, and the CPU computes one reference orbit through it at whatever precision the current zoom needs. The GPU then iterates only each pixel's small offset from that orbit (perturbation theory), in floats that carry a separate integer exponent so offsets far below 10^-38 do not underflow. Rebasing, which restarts the reference whenever a pixel's own orbit passes closer to 0 than its offset, keeps that single reference valid for every pixel. Bilinear approximation skips most of the iterations: while a pixel's offset is small enough, a run of 2^k iterations collapses into one multiply-add, and the CPU precomputes a binary tree of these runs along the reference orbit.
 

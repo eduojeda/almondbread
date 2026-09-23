@@ -27,6 +27,7 @@ FractalRenderer::~FractalRenderer() {
 }
 
 void FractalRenderer::draw(ParamInput& paramInput) {
+    shaderProgram_->use();
     double range = paramInput.getRange().toDouble();
     const BigComplex& origin = paramInput.getOrigin();
     complex<double> start = complex<double>(origin.re.toDouble(), origin.im.toDouble()) - complex<double>(range / 2.0, range / 2.0);

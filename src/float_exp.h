@@ -36,19 +36,19 @@ struct FloatExp {
     double log2() const { return std::log2(std::fabs(mantissa)) + exponent; }
     BigFixed toBigFixed(int fracLimbs) const { return BigFixed::fromScaled(mantissa, exponent, fracLimbs); }
 
-    std::string toString() const {
+    std::string toString(int decimals = 6) const {
         if (mantissa == 0.0) {
             return "0";
         }
         double log10Value = std::log10(std::fabs(mantissa)) + exponent * std::log10(2.0);
         double power = std::floor(log10Value);
         double digits = std::pow(10.0, log10Value - power);
-        if (digits >= 9.9999995) {
+        if (digits >= 10.0 - 0.5 * std::pow(10.0, -decimals)) {
             digits /= 10.0;
             power += 1.0;
         }
         char buffer[64];
-        snprintf(buffer, sizeof(buffer), "%s%.6fe%+.0f", mantissa < 0.0 ? "-" : "", digits, power);
+        snprintf(buffer, sizeof(buffer), "%s%.*fe%+.0f", mantissa < 0.0 ? "-" : "", decimals, digits, power);
         return buffer;
     }
 };

@@ -113,6 +113,25 @@ complex<double> ParamInput::getCursorCoords() {
     return complex<double>(origin_.re.toDouble(), origin_.im.toDouble()) + offset * range;
 }
 
+BigComplex ParamInput::getCursorPoint() {
+    return pointAtViewOffset(cursorViewOffset(), range_);
+}
+
+bool ParamInput::isCursorInWindow() {
+    return glfwGetWindowAttrib(window_, GLFW_HOVERED) != 0;
+}
+
+FloatExp ParamInput::getZoom() {
+    return FloatExp(INITIAL_RANGE) / range_;
+}
+
+int ParamInput::getCoordinateDecimals() {
+    int width, height;
+    glfwGetWindowSize(window_, &width, &height);
+    double log10PixelSize = (range_.log2() - log2((double) max(width, height))) * log10(2.0);
+    return max(1, (int) ceil(-log10PixelSize) + 1);
+}
+
 FloatExp ParamInput::getRange() {
     return range_;
 }

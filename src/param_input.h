@@ -18,6 +18,11 @@ public:
 
     const BigComplex& getOrigin();
     complex<double> getCursorCoords();
+    BigComplex getCursorPoint();
+    bool isCursorInWindow();
+    FloatExp getZoom();
+    // Decimal places needed to tell neighbouring window pixels apart.
+    int getCoordinateDecimals();
     FloatExp getRange();
     int getMaxIters();
     bool hasChanged();

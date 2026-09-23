@@ -9,8 +9,10 @@ using namespace std;
 #include <memory>
 
 #include "fractal_renderer.h"
+#include "hud.h"
 #include "perturbation_renderer.h"
 #include "param_input.h"
+#include "render_target.h"
 
 #ifdef _WIN32
 extern "C" {

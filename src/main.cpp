@@ -16,20 +16,34 @@ int main() {
         renderer.reset(new FractalRenderer(framebufferWidth, framebufferHeight));
     }
 
+    unique_ptr<RenderTarget> fractalImage(new RenderTarget(framebufferWidth, framebufferHeight));
+    unique_ptr<Hud> hud(new Hud(window));
+
     while (!glfwWindowShouldClose(window)) {
-        //glfwWaitEvents(); //instead of changed_?
+        // The fractal is rendered only when the view changes; the overlay is redrawn every frame so
+        // the cursor coordinates follow the mouse.
         if (paramInput.hasChanged()) {
+            double start = glfwGetTime();
+            fractalImage->bind();
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
             renderer->draw(paramInput);
-
-            glfwSwapBuffers(window);
+            glFinish();
+            hud->recordFrame(glfwGetTime() - start);
         }
+
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+        fractalImage->blitToScreen(width, height);
+        hud->draw(paramInput);
+        glfwSwapBuffers(window);
 
         glfwPollEvents();
         paramInput.update();
     }
 
+    hud.reset();
+    fractalImage.reset();
     renderer.reset();
     glfwTerminate();
     return 0;
