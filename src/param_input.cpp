@@ -69,16 +69,14 @@ void ParamInput::update() {
         changed_ = true;
     }
 
-    if (glfwGetKey(window_, GLFW_KEY_A) == GLFW_PRESS) {
-        quality_--;
-        if (quality_ < 1) {
-            quality_ = 1;
-        }
+    double now = glfwGetTime();
+    if (lowerIterations_.step(glfwGetKey(window_, GLFW_KEY_A) == GLFW_PRESS, now)) {
+        stepMaxIterations(-1);
         changed_ = true;
     }
 
-    if (glfwGetKey(window_, GLFW_KEY_D) == GLFW_PRESS) {
-        quality_++;
+    if (raiseIterations_.step(glfwGetKey(window_, GLFW_KEY_D) == GLFW_PRESS, now)) {
+        stepMaxIterations(1);
         changed_ = true;
     }
 
@@ -162,10 +160,54 @@ FloatExp ParamInput::getRange() {
 }
 
 int ParamInput::getMaxIters() {
+    return max(1, (int) lround(quality_ * iterationsPerQuality()));
+}
+
+// The iteration limit grows with zoom depth; quality scales it.
+double ParamInput::iterationsPerQuality() {
     int width, height;
     glfwGetWindowSize(window_, &width, &height);
     double zoomDigits = log10((double) width) - range_.log2() * log10(2.0);
-    return max(1, (int) (quality_ * pow(max(zoomDigits, 0.0), 1.25)));
+    return pow(max(zoomDigits, 0.0), 1.25);
+}
+
+void ParamInput::stepMaxIterations(int direction) {
+    double scale = iterationsPerQuality();
+    if (scale <= 0.0) {
+        return;
+    }
+
+    int current = getMaxIters();
+    int target = direction > 0
+        ? max(current + 1, (int) lround(current * ITERATION_STEP))
+        : max(1, min(current - 1, (int) lround(current / ITERATION_STEP)));
+    quality_ = target / scale;
+}
+
+bool KeyRepeat::step(bool down, double now) {
+    const double REPEAT_DELAY = 0.4;
+    const double SLOW_INTERVAL = 0.1;
+    const double FAST_INTERVAL = 0.04;
+    const double FAST_AFTER = 2.0;
+
+    if (!down) {
+        held = false;
+        return false;
+    }
+    if (!held) {
+        held = true;
+        pressedAt = now;
+        nextStep = now + REPEAT_DELAY;
+        return true;
+    }
+    if (now < nextStep) {
+        return false;
+    }
+
+    // A slow frame yields one step rather than a burst of the ones it missed.
+    double interval = now - pressedAt > FAST_AFTER ? FAST_INTERVAL : SLOW_INTERVAL;
+    nextStep = max(nextStep + interval, now);
+    return true;
 }
 
 bool ParamInput::hasChanged() {

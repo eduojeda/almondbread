@@ -25,6 +25,14 @@ std::string formatCoordinate(const BigFixed& value, int decimals) {
         + text.substr(text.size() - KEPT_DECIMALS);
 }
 
+std::string withThousandsSeparators(int value) {
+    std::string digits = std::to_string(value);
+    for (int i = (int) digits.size() - 3; i > 0; i -= 3) {
+        digits.insert(i, ",");
+    }
+    return digits;
+}
+
 std::string formatZoom(FloatExp zoom) {
     if (zoom.log2() < 16.0) {
         char buffer[32];
@@ -67,6 +75,7 @@ std::vector<std::string> Hud::lines(ParamInput& input) {
         result.push_back(frameRate);
     }
     result.push_back("Zoom " + formatZoom(input.getZoom()));
+    result.push_back("Iteration limit " + withThousandsSeparators(input.getMaxIters()));
 
     if (input.isCursorInWindow()) {
         BigComplex point = input.getCursorPoint();
