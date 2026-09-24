@@ -16,12 +16,6 @@ OBJS := $(SRCS:src/%.cpp=$(OBJDIR)/%.o) $(OBJDIR)/glad.o
 DEPS := $(OBJS:.o=.d)
 
 CPPFLAGS := -I$(GLFW_PREFIX)/include -Ilib/glad/include -Ilib/stb -DGL_SILENCE_DEPRECATION
-
-# Shader precision override for comparisons, e.g. `make clean && make PRECISION=FLOAT`
-# (FLOAT, DOUBLE_FLOAT or DOUBLE). Objects are not rebuilt automatically when this changes.
-ifdef PRECISION
-CPPFLAGS += -DALMONDBREAD_PRECISION=PRECISION_$(PRECISION)
-endif
 CXXFLAGS := -std=c++11 -Wall -O3 -ffast-math -g -MMD -MP
 CFLAGS := -O3 -g -MMD -MP
 LDLIBS := $(GLFW_PREFIX)/lib/libglfw3.a \
